@@ -16,6 +16,8 @@ import { Progress } from './progress/entities/progress.entity';
 import { Schedule } from './schedule/entities/schedule.entity';
 import { ScheduleModule } from './schedule/schedule.module';
 import { ProgressModule } from './progress/progress.module';
+import { NotificationModule } from './notification/notification.module';
+import { FirebaseModule } from './firebase/firebase.module';
 
 @Module({
   imports: [
@@ -39,6 +41,8 @@ import { ProgressModule } from './progress/progress.module';
     HabitModule,
     ScheduleModule,
     ProgressModule,
+    NotificationModule,
+    FirebaseModule,
   ],
   controllers: [AppController],
   providers: [
