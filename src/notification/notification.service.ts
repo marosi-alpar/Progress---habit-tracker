@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { CreateNotificationDto } from './dto/create-notification.dto';
 import { FirebaseService } from '../firebase/firebase.service';
+import { CreateNotificationDto } from './dto/create-notification.dto';
 
 @Injectable()
 export class NotificationService {

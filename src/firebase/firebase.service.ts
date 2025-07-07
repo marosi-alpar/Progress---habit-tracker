@@ -9,7 +9,7 @@ export class FirebaseService implements OnModuleInit {
       process.cwd(),
       'progr3ss-firebase-adminsdk.json',
     );
-    console.log(serviceAccountPath);
+    //console.log(serviceAccountPath);
     if (!admin.apps.length) {
       admin.initializeApp({
         credential: admin.credential.cert(require(serviceAccountPath)),

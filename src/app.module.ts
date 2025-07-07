@@ -18,10 +18,20 @@ import { ScheduleModule } from './schedule/schedule.module';
 import { ProgressModule } from './progress/progress.module';
 import { NotificationModule } from './notification/notification.module';
 import { FirebaseModule } from './firebase/firebase.module';
+import { BullModule } from '@nestjs/bullmq';
 
 @Module({
   imports: [
     TestModule,
+    BullModule.forRoot({
+      connection: {
+        host: process.env.REDIS_HOST || 'localhost',
+        port: Number(process.env.REDIS_PORT) || 6379,
+      },
+    }),
+    BullModule.registerQueue({
+      name: 'notification',
+    }),
     ConfigModule.forRoot(),
     UserModule,
     TypeOrmModule.forRoot({

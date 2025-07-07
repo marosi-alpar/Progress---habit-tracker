@@ -6,7 +6,7 @@ import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { UpdateScheduleDto } from './dto/update-schedule.dto';
 import { ScheduleResponseDto } from './dto/schedule-response.dto';
 import { Habit } from '../habit/entities/habit.entity';
-import { HabitResponseDto } from '../habit/dto/habit-response.dto';
+import { NotificationQueueService } from 'src/notification/notification-queue.service';
 
 @Injectable()
 export class ScheduleService {
@@ -16,6 +16,8 @@ export class ScheduleService {
 
     @InjectRepository(Habit)
     private habitRepo: Repository<Habit>,
+
+    private notificationQueueService: NotificationQueueService,
   ) {}
 
   async create(
@@ -34,6 +36,9 @@ export class ScheduleService {
     });
 
     const saved = await this.scheduleRepo.save(schedule);
+
+    await this.notificationQueueService.scheduleNotification(saved);
+
     return this.mapToResponseDto(saved, habit);
   }
 
