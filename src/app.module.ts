@@ -20,7 +20,6 @@ import { NotificationModule } from './notification/notification.module';
 import { FirebaseModule } from './firebase/firebase.module';
 import { BullModule } from '@nestjs/bullmq';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { CustomThrottlerGuard } from './auth/common/guards/custom-throttler.guard';
 
 @Module({
   imports: [

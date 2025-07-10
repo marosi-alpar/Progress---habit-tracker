@@ -1,26 +1,88 @@
-import { Injectable } from '@nestjs/common';
+import { ForbiddenException, Injectable } from '@nestjs/common';
 import { CreateProgressDto } from './dto/create-progress.dto';
 import { UpdateProgressDto } from './dto/update-progress.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Schedule } from 'src/schedule/entities/schedule.entity';
+import { Progress } from './entities/progress.entity';
+import { Repository } from 'typeorm';
+import { ProgressResponseDto } from './dto/progress-response.dto';
 
 @Injectable()
 export class ProgressService {
-  create(createProgressDto: CreateProgressDto) {
-    return 'This action adds a new progress';
+  constructor(
+    @InjectRepository(Schedule)
+    private readonly scheduleRepo: Repository<Schedule>,
+    @InjectRepository(Progress)
+    private readonly progressRepo: Repository<Progress>,
+  ) {}
+
+  async create(
+    dto: CreateProgressDto,
+    userId: number,
+  ): Promise<ProgressResponseDto> {
+    const schedule = await this.scheduleRepo.findOne({
+      where: { id: dto.scheduleId },
+      relations: ['user'],
+    });
+
+    if (!schedule || schedule.user.id !== userId) {
+      throw new ForbiddenException('Not your schedule.');
+    }
+
+    const progress = this.progressRepo.create({
+      ...dto,
+      user: { id: userId },
+      schedule: { id: dto.scheduleId },
+    });
+
+    const saved = await this.progressRepo.save(progress);
+
+    return this.toResponse(saved);
   }
 
-  findAll() {
-    return `This action returns all progress`;
+  async update(
+    id: number,
+    dto: UpdateProgressDto,
+    userId: number,
+  ): Promise<ProgressResponseDto> {
+    const progress = await this.progressRepo.findOne({
+      where: { id },
+      relations: ['user', 'schedule'],
+    });
+
+    if (!progress || progress.user.id !== userId) {
+      throw new ForbiddenException('You cannot update this progress.');
+    }
+
+    Object.assign(progress, dto);
+    const updated = await this.progressRepo.save(progress);
+    return this.toResponse(updated);
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} progress`;
+  async remove(id: number, userId: number) {
+    const progress = await this.progressRepo.findOne({
+      where: { id },
+      relations: ['user'],
+    });
+
+    if (!progress || progress.user.id !== userId) {
+      throw new ForbiddenException('You cannot delete this progress.');
+    }
+
+    await this.progressRepo.remove(progress);
+    return { message: 'Progress deleted successfully' };
   }
 
-  update(id: number, updateProgressDto: UpdateProgressDto) {
-    return `This action updates a #${id} progress`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} progress`;
+  private toResponse(progress: Progress): ProgressResponseDto {
+    return {
+      id: progress.id,
+      scheduleId: progress.schedule.id,
+      date: progress.date.toISOString(),
+      logged_time: progress.logged_time,
+      notes: progress.notes,
+      is_completed: progress.is_completed,
+      created_at: progress.created_at,
+      updated_at: progress.updated_at,
+    };
   }
 }
