@@ -16,6 +16,7 @@ import {
   ApiBearerAuth,
   ApiParam,
 } from '@nestjs/swagger';
+import { GetCurrentUserId } from 'src/auth/common/decorators';
 
 @ApiTags('Habit')
 @ApiBearerAuth('access-token')
@@ -26,15 +27,20 @@ export class HabitController {
   @Get()
   @ApiOperation({ summary: 'List all habits' })
   @ApiResponse({ status: 200, type: [HabitResponseDto] })
-  async findAll(): Promise<HabitResponseDto[]> {
-    return this.habitService.findAll();
+  async findAll(
+    @GetCurrentUserId() userId: number,
+  ): Promise<HabitResponseDto[]> {
+    return this.habitService.findAll(userId);
   }
 
   @Post()
   @ApiOperation({ summary: 'Create a new habit' })
   @ApiResponse({ status: 201, type: HabitResponseDto })
-  async create(@Body() habitData: CreateHabitDto): Promise<HabitResponseDto> {
-    return this.habitService.create(habitData);
+  async create(
+    @GetCurrentUserId() userId: number,
+    @Body() habitData: CreateHabitDto,
+  ): Promise<HabitResponseDto> {
+    return this.habitService.create(habitData, userId);
   }
 
   @Get('user/:userId')
@@ -53,7 +59,8 @@ export class HabitController {
   @ApiResponse({ status: 200, type: HabitResponseDto })
   async findById(
     @Param('habitId', ParseIntPipe) habitId: number,
+    @GetCurrentUserId() userId: number,
   ): Promise<HabitResponseDto> {
-    return this.habitService.findById(habitId);
+    return this.habitService.findById(habitId, userId);
   }
 }
