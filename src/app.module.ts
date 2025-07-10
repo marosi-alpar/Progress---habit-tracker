@@ -19,6 +19,8 @@ import { ProgressModule } from './progress/progress.module';
 import { NotificationModule } from './notification/notification.module';
 import { FirebaseModule } from './firebase/firebase.module';
 import { BullModule } from '@nestjs/bullmq';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { CustomThrottlerGuard } from './auth/common/guards/custom-throttler.guard';
 
 @Module({
   imports: [
@@ -53,6 +55,11 @@ import { BullModule } from '@nestjs/bullmq';
     ProgressModule,
     NotificationModule,
     FirebaseModule,
+    ThrottlerModule.forRootAsync({
+      useFactory: () => ({
+        throttlers: [{ limit: 10, ttl: 60 * 1000 }],
+      }),
+    }),
   ],
   controllers: [AppController],
   providers: [
@@ -60,6 +67,10 @@ import { BullModule } from '@nestjs/bullmq';
     {
       provide: APP_GUARD,
       useClass: AtGuard,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard, // 💡 Globális guardként regisztráljuk
     },
   ],
 })

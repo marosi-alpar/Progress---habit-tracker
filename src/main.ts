@@ -1,9 +1,20 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { ValidationPipe } from '@nestjs/common';
+import { AllExceptionsFilter } from './filters/all-exceptions.filter';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  app.useGlobalFilters(new AllExceptionsFilter());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // csak DTO-ban definiált mezők mennek át
+      forbidNonWhitelisted: true, // tiltja az extra mezőket
+      transform: true, // automatikusan konvertál típusokra
+    }),
+  );
 
   // 🔧 Swagger configuration with Bearer Token
   const config = new DocumentBuilder()
