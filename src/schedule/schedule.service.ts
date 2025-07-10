@@ -22,53 +22,74 @@ export class ScheduleService {
 
   async create(
     createScheduleDto: CreateScheduleDto,
+    userId: number,
   ): Promise<ScheduleResponseDto> {
     const habit = await this.habitRepo.findOne({
-      where: { id: createScheduleDto.habitId },
+      where: { id: createScheduleDto.habitId, user: { id: userId } }, // csak saját habit legyen érvényes
     });
     if (!habit) {
-      throw new NotFoundException('Habit not found');
+      throw new NotFoundException('Habit not found or unauthorized');
     }
 
     const schedule = this.scheduleRepo.create({
       ...createScheduleDto,
-      habit: habit,
+      habit,
+      user: { id: userId } as any, // csak id elég, nem kell lekérni
     });
 
     const saved = await this.scheduleRepo.save(schedule);
-
     await this.notificationQueueService.scheduleNotification(saved);
 
     return this.mapToResponseDto(saved, habit);
   }
 
-  async findAll(): Promise<ScheduleResponseDto[]> {
-    const schedules = await this.scheduleRepo.find({ relations: ['habit'] });
+  async findAll(userId: number): Promise<ScheduleResponseDto[]> {
+    const schedules = await this.scheduleRepo.find({
+      where: { user: { id: userId } },
+      relations: ['habit'],
+    });
     return schedules.map((s) => this.mapToResponseDto(s, s.habit));
   }
 
-  async findOne(id: number): Promise<ScheduleResponseDto> {
+  async findOne(id: number, userId: number): Promise<ScheduleResponseDto> {
     const schedule = await this.scheduleRepo.findOne({
-      where: { id },
+      where: { id, user: { id: userId } },
       relations: ['habit'],
     });
+    if (!schedule)
+      throw new NotFoundException('Schedule not found or unauthorized');
     return this.mapToResponseDto(schedule, schedule.habit);
   }
 
   async update(
     id: number,
     updateScheduleDto: UpdateScheduleDto,
+    userId: number,
   ): Promise<ScheduleResponseDto> {
-    await this.scheduleRepo.save({ id, ...updateScheduleDto });
     const schedule = await this.scheduleRepo.findOne({
+      where: { id, user: { id: userId } },
+      relations: ['habit'],
+    });
+    if (!schedule)
+      throw new NotFoundException('Schedule not found or unauthorized');
+
+    await this.scheduleRepo.save({ ...schedule, ...updateScheduleDto });
+    const updated = await this.scheduleRepo.findOne({
       where: { id },
       relations: ['habit'],
     });
-    return this.mapToResponseDto(schedule, schedule.habit);
+
+    return this.mapToResponseDto(updated, updated.habit);
   }
 
-  async remove(id: number): Promise<void> {
-    await this.scheduleRepo.delete(id);
+  async remove(id: number, userId: number): Promise<void> {
+    const schedule = await this.scheduleRepo.findOne({
+      where: { id, user: { id: userId } },
+    });
+    if (!schedule)
+      throw new NotFoundException('Schedule not found or unauthorized');
+
+    await this.scheduleRepo.remove(schedule);
   }
 
   private mapToResponseDto(

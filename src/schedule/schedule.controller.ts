@@ -20,6 +20,7 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { ScheduleResponseDto } from './dto/schedule-response.dto';
+import { GetCurrentUserId } from 'src/auth/common/decorators';
 
 @ApiTags('Schedule')
 @ApiBearerAuth('access-token')
@@ -34,10 +35,11 @@ export class ScheduleController {
     description: 'Schedule created',
     type: ScheduleResponseDto,
   })
-  create(
+  async create(
+    @GetCurrentUserId() userId: number,
     @Body() createScheduleDto: CreateScheduleDto,
   ): Promise<ScheduleResponseDto> {
-    return this.scheduleService.create(createScheduleDto);
+    return this.scheduleService.create(createScheduleDto, userId);
   }
 
   @Get()
@@ -47,8 +49,10 @@ export class ScheduleController {
     description: 'List of schedules',
     type: [ScheduleResponseDto],
   })
-  findAll(): Promise<ScheduleResponseDto[]> {
-    return this.scheduleService.findAll();
+  async findAll(
+    @GetCurrentUserId() userId: number,
+  ): Promise<ScheduleResponseDto[]> {
+    return this.scheduleService.findAll(userId);
   }
 
   @Get(':id')
@@ -59,8 +63,11 @@ export class ScheduleController {
     description: 'Schedule found',
     type: ScheduleResponseDto,
   })
-  findOne(@Param('id', ParseIntPipe) id: number): Promise<ScheduleResponseDto> {
-    return this.scheduleService.findOne(id);
+  asyncfindOne(
+    @Param('id', ParseIntPipe) id: number,
+    @GetCurrentUserId() userId: number,
+  ): Promise<ScheduleResponseDto> {
+    return this.scheduleService.findOne(id, userId);
   }
 
   @Patch(':id')
@@ -71,18 +78,22 @@ export class ScheduleController {
     description: 'Schedule updated',
     type: ScheduleResponseDto,
   })
-  update(
+  async update(
     @Param('id', ParseIntPipe) id: number,
+    @GetCurrentUserId() userId: number,
     @Body() updateScheduleDto: UpdateScheduleDto,
   ): Promise<ScheduleResponseDto> {
-    return this.scheduleService.update(id, updateScheduleDto);
+    return this.scheduleService.update(id, updateScheduleDto, userId);
   }
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete schedule by ID' })
   @ApiParam({ name: 'id', type: Number })
   @ApiResponse({ status: 204, description: 'Schedule deleted' })
-  async remove(@Param('id', ParseIntPipe) id: number): Promise<void> {
-    await this.scheduleService.remove(id);
+  async remove(
+    @Param('id', ParseIntPipe) id: number,
+    @GetCurrentUserId() userId: number,
+  ): Promise<void> {
+    return this.scheduleService.remove(id, userId);
   }
 }

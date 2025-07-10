@@ -11,10 +11,6 @@ import { ScheduleStatus } from '../entities/schedule.entity';
 export class CreateScheduleDto {
   @ApiProperty()
   @IsNumber()
-  userId: number;
-
-  @ApiProperty()
-  @IsNumber()
   habitId: number;
 
   @ApiProperty()
