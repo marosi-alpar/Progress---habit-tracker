@@ -148,7 +148,7 @@ export class AuthService {
 
     if (!user) throw new ForbiddenException('Access denied');
     const checkPassword = await bcrypt.compare(dto.password, user.password);
-    if (!checkPassword) throw new ForbiddenException('Acces denied');
+    if (!checkPassword) throw new ForbiddenException('Access denied');
     if (user.profile === null) {
       throw new ForbiddenException('Access denied - profile null');
     }
