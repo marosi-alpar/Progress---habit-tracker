@@ -5,8 +5,10 @@ import {
   IsBoolean,
   Min,
   MaxLength,
+  IsDate,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 
 export class CreateProgressDto {
   @ApiProperty()
@@ -14,7 +16,8 @@ export class CreateProgressDto {
   scheduleId: number;
 
   @ApiProperty()
-  @IsDateString()
+  @Type(() => Date)
+  @IsDate()
   date: string;
 
   @ApiProperty({ required: false })
