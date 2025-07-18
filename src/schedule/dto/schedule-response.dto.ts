@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ScheduleStatus } from '../entities/schedule.entity';
 import { HabitResponseDto } from 'src/habit/dto/habit-response.dto';
+import { IsOptional } from 'class-validator';
+import { ProgressResponseDto } from 'src/progress/dto/progress-response.dto';
 export class ScheduleResponseDto {
   @ApiProperty()
   id: number;
@@ -28,4 +30,8 @@ export class ScheduleResponseDto {
 
   @ApiProperty({ type: () => HabitResponseDto })
   habit: HabitResponseDto;
+
+  @ApiProperty({ required: false, nullable: true })
+  @IsOptional()
+  progress?: ProgressResponseDto | null;
 }

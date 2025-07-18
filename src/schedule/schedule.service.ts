@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, Repository } from 'typeorm';
-import { Schedule } from './entities/schedule.entity';
+import { Between, LessThan, Repository } from 'typeorm';
+import { Schedule, ScheduleStatus } from './entities/schedule.entity';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { UpdateScheduleDto } from './dto/update-schedule.dto';
 import { ScheduleResponseDto } from './dto/schedule-response.dto';
@@ -107,16 +107,41 @@ export class ScheduleService {
         user: { id: userId },
         date: Between(start, end),
       },
-      relations: ['habit'],
+      relations: ['habit', 'progress'],
     });
 
     return schedules.map((s) => this.mapToResponseDto(s, s.habit));
+  }
+
+  async markMissedSchedulesAsSkipped() {
+    const now = new Date();
+
+    const expiredSchedules = await this.scheduleRepo.find({
+      where: {
+        end_time: LessThan(now),
+        status: ScheduleStatus.PLANNED,
+      },
+      relations: ['progress'],
+    });
+
+    for (const schedule of expiredSchedules) {
+      const hasCompletedProgress = schedule.progress?.some(
+        (p) => p.is_completed === true,
+      );
+
+      if (!hasCompletedProgress) {
+        schedule.status = ScheduleStatus.SKIPPED;
+        await this.scheduleRepo.save(schedule);
+      }
+    }
   }
 
   private mapToResponseDto(
     schedule: Schedule,
     habit: Habit,
   ): ScheduleResponseDto {
+    const latestProgress = schedule.progress?.[0]; // vagy logika szerint választhatsz
+
     return {
       id: schedule.id,
       start_time: schedule.start_time,
@@ -136,6 +161,18 @@ export class ScheduleService {
         created_at: habit.created_at,
         updated_at: habit.updated_at,
       },
+      progress: latestProgress
+        ? {
+            id: latestProgress.id,
+            scheduleId: schedule.id,
+            date: latestProgress.date.toISOString(),
+            logged_time: latestProgress.logged_time,
+            is_completed: latestProgress.is_completed,
+            notes: latestProgress.notes,
+            created_at: latestProgress.created_at,
+            updated_at: latestProgress.updated_at,
+          }
+        : null,
     };
   }
 }

@@ -20,7 +20,8 @@ import { NotificationModule } from './notification/notification.module';
 import { FirebaseModule } from './firebase/firebase.module';
 import { BullModule } from '@nestjs/bullmq';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-
+import { ScheduleModule as NestScheduleModule } from '@nestjs/schedule';
+import { ScheduleCronService } from './schedule-cron/schedule-cron.service';
 @Module({
   imports: [
     TestModule,
@@ -30,6 +31,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
         port: Number(process.env.REDIS_PORT) || 6379,
       },
     }),
+    NestScheduleModule.forRoot(),
     BullModule.registerQueue({
       name: 'notification',
     }),
@@ -71,6 +73,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
       provide: APP_GUARD,
       useClass: ThrottlerGuard, // 💡 Globális guardként regisztráljuk
     },
+    ScheduleCronService,
   ],
 })
 export class AppModule {}

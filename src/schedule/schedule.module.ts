@@ -10,5 +10,6 @@ import { NotificationModule } from 'src/notification/notification.module';
   imports: [TypeOrmModule.forFeature([Schedule, Habit]), NotificationModule],
   providers: [ScheduleService],
   controllers: [ScheduleController],
+  exports: [ScheduleService],
 })
 export class ScheduleModule {}
