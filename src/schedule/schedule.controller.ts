@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   ParseIntPipe,
+  Query,
 } from '@nestjs/common';
 import { ScheduleService } from './schedule.service';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
@@ -21,6 +22,7 @@ import {
 } from '@nestjs/swagger';
 import { ScheduleResponseDto } from './dto/schedule-response.dto';
 import { GetCurrentUserId } from 'src/auth/common/decorators';
+import { GetSchedulesByDateQueryDto } from './dto/get-schedule-by-date-query.dto';
 
 @ApiTags('Schedule')
 @ApiBearerAuth('access-token')
@@ -53,6 +55,21 @@ export class ScheduleController {
     @GetCurrentUserId() userId: number,
   ): Promise<ScheduleResponseDto[]> {
     return this.scheduleService.findAll(userId);
+  }
+
+  @Get('day')
+  @ApiOperation({ summary: 'Get schedules by day (defaults to today)' })
+  @ApiResponse({
+    status: 200,
+    description: 'Schedules for the given day (or today if not provided)',
+    type: [ScheduleResponseDto],
+  })
+  async getByDate(
+    @GetCurrentUserId() userId: number,
+    @Query() query: GetSchedulesByDateQueryDto,
+  ): Promise<ScheduleResponseDto[]> {
+    const parsedDate = query.date ?? new Date().toISOString().split('T')[0];
+    return this.scheduleService.findByDate(userId, parsedDate);
   }
 
   @Get(':id')

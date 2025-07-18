@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Between, Repository } from 'typeorm';
 import { Schedule } from './entities/schedule.entity';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { UpdateScheduleDto } from './dto/update-schedule.dto';
@@ -90,6 +90,27 @@ export class ScheduleService {
       throw new NotFoundException('Schedule not found or unauthorized');
 
     await this.scheduleRepo.remove(schedule);
+  }
+
+  async findByDate(
+    userId: number,
+    date: string,
+  ): Promise<ScheduleResponseDto[]> {
+    const start = new Date(date);
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date(date);
+    end.setHours(23, 59, 59, 999);
+
+    const schedules = await this.scheduleRepo.find({
+      where: {
+        user: { id: userId },
+        date: Between(start, end),
+      },
+      relations: ['habit'],
+    });
+
+    return schedules.map((s) => this.mapToResponseDto(s, s.habit));
   }
 
   private mapToResponseDto(
