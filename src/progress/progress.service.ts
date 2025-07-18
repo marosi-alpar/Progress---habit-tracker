@@ -2,7 +2,10 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { CreateProgressDto } from './dto/create-progress.dto';
 import { UpdateProgressDto } from './dto/update-progress.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Schedule } from 'src/schedule/entities/schedule.entity';
+import {
+  Schedule,
+  ScheduleStatus,
+} from 'src/schedule/entities/schedule.entity';
 import { Progress } from './entities/progress.entity';
 import { Repository } from 'typeorm';
 import { ProgressResponseDto } from './dto/progress-response.dto';
@@ -37,6 +40,11 @@ export class ProgressService {
 
     const saved = await this.progressRepo.save(progress);
 
+    if (dto.is_completed === true) {
+      schedule.status = ScheduleStatus.COMPLETED; // vagy ScheduleStatus.COMPLETED ha enumot használsz
+      await this.scheduleRepo.save(schedule);
+    }
+
     return this.toResponse(saved);
   }
 
@@ -56,6 +64,17 @@ export class ProgressService {
 
     Object.assign(progress, dto);
     const updated = await this.progressRepo.save(progress);
+
+    if (updated.is_completed === true) {
+      const schedule = await this.scheduleRepo.findOne({
+        where: { id: updated.schedule.id },
+      });
+      if (schedule) {
+        schedule.status = ScheduleStatus.COMPLETED;
+        await this.scheduleRepo.save(schedule);
+      }
+    }
+
     return this.toResponse(updated);
   }
 
