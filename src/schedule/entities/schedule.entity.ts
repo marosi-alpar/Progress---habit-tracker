@@ -6,6 +6,8 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { User } from '../../user/entities/user.entity';
 import { Habit } from '../../habit/entities/habit.entity';
@@ -30,6 +32,10 @@ export class Schedule {
 
   @OneToMany(() => Progress, (progress) => progress.schedule)
   progress: Progress[];
+
+  @ManyToMany(() => User)
+  @JoinTable() // ez automatikusan létrehoz egy kapcsolótáblát pl. `schedule_users_user`
+  participants: User[];
 
   @Column()
   start_time: Date;

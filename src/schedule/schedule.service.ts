@@ -1,12 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, LessThan, Repository } from 'typeorm';
+import { Between, In, LessThan, Repository } from 'typeorm';
 import { Schedule, ScheduleStatus } from './entities/schedule.entity';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { UpdateScheduleDto } from './dto/update-schedule.dto';
 import { ScheduleResponseDto } from './dto/schedule-response.dto';
 import { Habit } from '../habit/entities/habit.entity';
 import { NotificationQueueService } from 'src/notification/notification-queue.service';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class ScheduleService {
@@ -18,12 +19,22 @@ export class ScheduleService {
     private habitRepo: Repository<Habit>,
 
     private notificationQueueService: NotificationQueueService,
+
+    @InjectRepository(User)
+    private userRepo: Repository<User>,
   ) {}
 
   async create(
     createScheduleDto: CreateScheduleDto,
     userId: number,
   ): Promise<ScheduleResponseDto> {
+    let participants: User[] = [];
+
+    if (createScheduleDto.participantIds?.length) {
+      participants = await this.userRepo.findBy({
+        id: In(createScheduleDto.participantIds),
+      });
+    }
     const habit = await this.habitRepo.findOne({
       where: { id: createScheduleDto.habitId, user: { id: userId } }, // csak saját habit legyen érvényes
     });
@@ -35,6 +46,7 @@ export class ScheduleService {
       ...createScheduleDto,
       habit,
       user: { id: userId } as any, // csak id elég, nem kell lekérni
+      participants,
     });
 
     const saved = await this.scheduleRepo.save(schedule);
@@ -151,6 +163,13 @@ export class ScheduleService {
       is_custom: schedule.is_custom,
       created_at: schedule.created_at,
       updated_at: schedule.updated_at,
+      participants:
+        schedule.participants?.map((u) => ({
+          id: u.id,
+          name: u.profile.username,
+          email: u.email,
+          profile_image: u.profile.profileImageUrl,
+        })) || [],
       habit: {
         id: habit.id,
         name: habit.name,

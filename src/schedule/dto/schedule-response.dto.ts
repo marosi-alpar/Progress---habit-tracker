@@ -34,4 +34,30 @@ export class ScheduleResponseDto {
   @ApiProperty({ required: false, nullable: true })
   @IsOptional()
   progress?: ProgressResponseDto | null;
+
+  @ApiProperty({
+    required: false,
+    isArray: true,
+    type: 'object',
+    example: [
+      {
+        id: 2,
+        name: 'Anna',
+        email: 'anna@example.com',
+        profile_image: 'https://example.com/images/anna.jpg',
+      },
+      {
+        id: 3,
+        name: 'Tom',
+        email: 'tom@example.com',
+        profile_image: 'https://example.com/images/tom.jpg',
+      },
+    ],
+  })
+  participants?: {
+    id: number;
+    name: string;
+    email: string;
+    profile_image: string;
+  }[];
 }

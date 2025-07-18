@@ -1,6 +1,8 @@
 import {
+  IsArray,
   IsDateString,
   IsEnum,
+  IsInt,
   IsNotEmpty,
   IsNumber,
   IsOptional,
@@ -32,4 +34,15 @@ export class CreateScheduleDto {
 
   @ApiProperty({ default: false })
   is_custom: boolean;
+
+  @ApiProperty({
+    required: false,
+    type: [Number],
+    description: 'List of user IDs who participated in the schedule',
+    example: [2, 3, 7],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsInt({ each: true })
+  participantIds?: number[];
 }
