@@ -22,6 +22,7 @@ import { BullModule } from '@nestjs/bullmq';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ScheduleModule as NestScheduleModule } from '@nestjs/schedule';
 import { ScheduleCronService } from './schedule-cron/schedule-cron.service';
+import { AssetsController } from './assets/assets.controller';
 @Module({
   imports: [
     TestModule,
@@ -62,7 +63,7 @@ import { ScheduleCronService } from './schedule-cron/schedule-cron.service';
       }),
     }),
   ],
-  controllers: [AppController],
+  controllers: [AppController, AssetsController],
   providers: [
     AppService,
     {
