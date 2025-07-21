@@ -20,6 +20,7 @@ import {
   ApiBearerAuth,
 } from '@nestjs/swagger';
 import { ProfileResponseDto } from './dto/profile-response.dto';
+import { UpdateFcmTokenDto } from './dto/update-fcm-token.dto';
 
 @ApiTags('Profile')
 @ApiBearerAuth('access-token')
@@ -101,7 +102,7 @@ export class ProfileController {
   @ApiResponse({ status: 200, description: 'FCM token updated.' })
   async updateFcmToken(
     @GetCurrentUser('profileId') id: number,
-    @Body() token: { token: string },
+    @Body() token: UpdateFcmTokenDto,
   ) {
     return await this.profileService.updateFcmToken(id, token);
   }

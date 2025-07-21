@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Profile } from './entities/profile.entity';
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { UpdateFcmTokenDto } from './dto/update-fcm-token.dto';
 
 @Injectable()
 export class ProfileService {
@@ -76,7 +77,7 @@ export class ProfileService {
     }
   }
 
-  async updateFcmToken(id: number, token: { token: string }): Promise<Profile> {
+  async updateFcmToken(id: number, token: UpdateFcmTokenDto): Promise<Profile> {
     const profile = await this.profileRepository.findOne({ where: { id } });
     if (!profile) {
       throw new NotFoundException(`Profile with ID ${id} not found`);
