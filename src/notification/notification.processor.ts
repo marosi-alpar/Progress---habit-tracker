@@ -22,18 +22,18 @@ export class NotificationProcessor extends WorkerHost {
 
     const schedule = await this.scheduleRepo.findOne({
       where: { id: scheduleId },
-      relations: ['user'],
+      relations: ['user', 'user.profile', 'habit'],
     });
-    console.log(schedule);
-    if (!schedule || !schedule.user || !schedule.user.fcm_token) {
+    if (!schedule || !schedule.user || !schedule.user.profile.fcmToken) {
       console.log('Hiba: nem található a felhasználói token.');
       return;
     }
 
+    console.log(schedule.habit.name);
     await this.firebaseService.sendNotification(
-      'dyp2VF9nSzGwheGTeA4vUT:APA91bG45VxFIIoTqrjzPGaL2W_7kFspPezyPpcTMpt8tdEs5nIHbGETfn5ElfojhTNMmUmfCq6EZ7q7ka0BUmT4fVoOqO7Ty-t6XHbANT2mYkEe1OJAlzY',
+      schedule.user.profile.fcmToken,
       'Emlékeztető',
-      `Nemsokára kezdődik a(z) ${schedule.habit?.name ?? 'feladat'}!`,
+      `Nemsokára kezdődik a(z) ${schedule.habit.name ?? 'feladat'}!`,
     );
 
     console.log(
