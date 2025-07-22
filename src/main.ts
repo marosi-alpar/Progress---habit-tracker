@@ -53,8 +53,9 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   console.log('Static assets path:', join(__dirname, '..', 'public'));
+  console.log('Server running on host ', process.env.HOST || '0.0.0.0');
   console.log('Server running on port ', process.env.PORT || 8080);
 
-  await app.listen(process.env.PORT || 8080);
+  await app.listen(process.env.PORT || 8080, process.env.HOST || '0.0.0.0');
 }
 bootstrap();
