@@ -30,6 +30,7 @@ import { AssetsController } from './assets/assets.controller';
       connection: {
         host: process.env.REDIS_HOST || 'localhost',
         port: Number(process.env.REDIS_PORT) || 6379,
+        password: process.env.REDIS_PASSWORD,
       },
     }),
     NestScheduleModule.forRoot(),
@@ -77,4 +78,4 @@ import { AssetsController } from './assets/assets.controller';
     ScheduleCronService,
   ],
 })
-export class AppModule {}
+export class AppModule { }

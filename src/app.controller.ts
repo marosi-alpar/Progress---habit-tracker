@@ -5,11 +5,17 @@ import { Throttle } from '@nestjs/throttler';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService) {}
+  constructor(private readonly appService: AppService) { }
 
   @Public()
   @Get()
   getHello(): string {
     return this.appService.getHello();
+  }
+
+  @Public()
+  @Get('health')
+  getHealth() {
+    return { status: 'ok' };
   }
 }
