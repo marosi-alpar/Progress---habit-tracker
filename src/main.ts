@@ -5,7 +5,8 @@ import { ValidationPipe } from '@nestjs/common';
 import { AllExceptionsFilter } from './filters/all-exceptions.filter';
 import { join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
-
+import { HabitCategory } from './habit/entities/habit-category.entity';
+import { DataSource } from 'typeorm';
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
@@ -54,6 +55,26 @@ async function bootstrap() {
 
   console.log('Static assets path:', join(__dirname, '..', 'public'));
   console.log('Server running on: http://localhost:3000');
+
+  const dataSource = app.get(DataSource);
+
+  const categoryRepo = dataSource.getRepository(HabitCategory);
+
+  const defaults = [
+    { name: 'Exercise', iconUrl: '/icons/gym.svg' },
+    { name: 'Reading', iconUrl: '/icons/read.svg' },
+    { name: 'Study', iconUrl: '/icons/code.svg' },
+    { name: 'Hydration', iconUrl: '/icons/water.svg' },
+    { name: 'Writing', iconUrl: '/icons/write.svg' },
+    { name: 'Running', iconUrl: '/icons/run.svg' },
+    { name: 'Other', iconUrl: '/icons/other.svg' }, // ⬅️ EZ HIÁNYZOTT
+  ];
+
+  for (const data of defaults) {
+    await categoryRepo.upsert(data, ['name']);
+  }
+
+  console.log('💾 HabitCategory újratöltve a public/icons mappából.');
 
   await app.listen(3000);
 }

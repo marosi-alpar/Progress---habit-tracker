@@ -5,13 +5,21 @@ import { Repository } from 'typeorm';
 import { HabitResponseDto } from './dto/habit-response.dto';
 import { CreateHabitDto } from './dto/create-habit.dto';
 import { UpdateHabitDto } from './dto/update-habit.dto';
+import { HabitCategory } from './entities/habit-category.entity';
 
 @Injectable()
 export class HabitService {
   constructor(
     @InjectRepository(Habit)
     private habitRepo: Repository<Habit>,
+
+    @InjectRepository(HabitCategory)
+    private categoryRepo: Repository<HabitCategory>,
   ) {}
+
+  async findAllCategories(): Promise<HabitCategory[]> {
+    return this.categoryRepo.find();
+  }
 
   async findAll(userId: number): Promise<HabitResponseDto[]> {
     const habits = await this.habitRepo.find({
@@ -24,10 +32,17 @@ export class HabitService {
     habitData: CreateHabitDto,
     userId: number,
   ): Promise<HabitResponseDto> {
+    const category = await this.categoryRepo.findOneBy({
+      id: habitData.categoryId,
+    });
+    if (!category) throw new NotFoundException('Category not found');
+
     const habit = this.habitRepo.create({
       ...habitData,
+      category, // ez már a teljes objektum
       user: { id: userId } as any,
     });
+
     const saved = await this.habitRepo.save(habit);
     return this.mapToResponseDto(saved);
   }

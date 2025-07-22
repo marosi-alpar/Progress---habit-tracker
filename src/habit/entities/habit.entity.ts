@@ -10,13 +10,7 @@ import {
 import { User } from '../../user/entities/user.entity';
 import { Progress } from '../../progress/entities/progress.entity';
 import { Schedule } from '../../schedule/entities/schedule.entity';
-
-export enum HabitCategory {
-  EXERCISE = 'Exercise',
-  READING = 'Reading',
-  STUDY = 'Study',
-  OTHER = 'Other',
-}
+import { HabitCategory } from './habit-category.entity';
 
 export enum HabitFrequency {
   DAILY = 'Daily',
@@ -37,7 +31,9 @@ export class Habit {
   @Column({ nullable: true })
   description: string;
 
-  @Column({ type: 'enum', enum: HabitCategory })
+  @ManyToOne(() => HabitCategory, (category) => category.habits, {
+    eager: true,
+  })
   category: HabitCategory;
 
   @Column()
