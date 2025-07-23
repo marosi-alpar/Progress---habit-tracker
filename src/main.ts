@@ -56,7 +56,6 @@ async function bootstrap() {
   console.log('Static assets path:', join(__dirname, '..', 'public'));
   console.log('Server running on host ', process.env.HOST || '0.0.0.0');
   console.log('Server running on port ', process.env.PORT || 8080);
-  console.log('Server running on: http://localhost:3000');
 
   const dataSource = app.get(DataSource);
 
