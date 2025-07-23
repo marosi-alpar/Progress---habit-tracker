@@ -23,6 +23,8 @@ import {
 import { ScheduleResponseDto } from './dto/schedule-response.dto';
 import { GetCurrentUserId } from 'src/auth/common/decorators';
 import { GetSchedulesByDateQueryDto } from './dto/get-schedule-by-date-query.dto';
+import { CreateCustomScheduleDto } from './dto/create-custom-schedule.dto';
+import { CreateRecurringScheduleDto } from './dto/create-reccuring-schedule.dto';
 
 @ApiTags('Schedule')
 @ApiBearerAuth('access-token')
@@ -30,18 +32,34 @@ import { GetSchedulesByDateQueryDto } from './dto/get-schedule-by-date-query.dto
 export class ScheduleController {
   constructor(private readonly scheduleService: ScheduleService) {}
 
-  @Post()
-  @ApiOperation({ summary: 'Create new schedule' })
+  @Post('custom')
+  @ApiOperation({ summary: 'Create a custom schedule (manual time)' })
   @ApiResponse({
     status: 201,
-    description: 'Schedule created',
+    description: 'Custom schedule created',
     type: ScheduleResponseDto,
   })
-  async create(
+  async createCustom(
     @GetCurrentUserId() userId: number,
-    @Body() createScheduleDto: CreateScheduleDto,
+    @Body() dto: CreateCustomScheduleDto,
   ): Promise<ScheduleResponseDto> {
-    return this.scheduleService.create(createScheduleDto, userId);
+    return this.scheduleService.createCustom(dto, userId);
+  }
+
+  @Post('recurring')
+  @ApiOperation({
+    summary: 'Create a recurring schedule (e.g. weekdays, weekends)',
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'Recurring schedules created',
+    type: [ScheduleResponseDto],
+  })
+  async createRecurring(
+    @GetCurrentUserId() userId: number,
+    @Body() dto: CreateRecurringScheduleDto,
+  ): Promise<ScheduleResponseDto[]> {
+    return this.scheduleService.createRecurring(dto, userId);
   }
 
   @Get()

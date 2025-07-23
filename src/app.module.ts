@@ -23,6 +23,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ScheduleModule as NestScheduleModule } from '@nestjs/schedule';
 import { ScheduleCronService } from './schedule-cron/schedule-cron.service';
 import { AssetsController } from './assets/assets.controller';
+import { HabitCategory } from './habit/entities/habit-category.entity';
 @Module({
   imports: [
     TestModule,
@@ -46,7 +47,7 @@ import { AssetsController } from './assets/assets.controller';
       username: process.env.PG_USERNAME,
       password: process.env.PG_PASSWORD,
       database: process.env.PG_DATABASE,
-      entities: [User, Profile, Habit, Schedule, Progress],
+      entities: [User, Profile, Habit, Schedule, Progress, HabitCategory],
       synchronize: true,
       ssl: {
         rejectUnauthorized: false,

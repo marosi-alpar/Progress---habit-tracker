@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { HabitCategory, HabitFrequency } from '../entities/habit.entity';
+import { HabitCategory } from '../entities/habit-category.entity';
 
 export class HabitResponseDto {
   @ApiProperty()
@@ -11,14 +11,11 @@ export class HabitResponseDto {
   @ApiProperty({ required: false })
   description?: string;
 
-  @ApiProperty({ enum: HabitCategory })
+  @ApiProperty({ type: () => HabitCategory })
   category: HabitCategory;
 
   @ApiProperty()
   goal: string;
-
-  @ApiProperty({ enum: HabitFrequency })
-  frequency: HabitFrequency;
 
   @ApiProperty()
   created_at: Date;

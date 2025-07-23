@@ -17,6 +17,8 @@ import {
   ApiParam,
 } from '@nestjs/swagger';
 import { GetCurrentUserId } from 'src/auth/common/decorators';
+import { HabitCategory } from './entities/habit-category.entity';
+import { HabitCategoryResponseDto } from './dto/habit-category-response.dto';
 
 @ApiTags('Habit')
 @ApiBearerAuth('access-token')
@@ -51,6 +53,18 @@ export class HabitController {
     @Param('userId', ParseIntPipe) userId: number,
   ): Promise<HabitResponseDto[]> {
     return this.habitService.findByUserId(userId);
+  }
+
+  @Get('categories')
+  @ApiOperation({ summary: 'Get habit categories' })
+  @ApiResponse({ status: 200, type: [HabitCategoryResponseDto] })
+  async getCategories(): Promise<HabitCategoryResponseDto[]> {
+    const categories = await this.habitService.findAllCategories();
+    return categories.map((cat) => ({
+      id: cat.id,
+      name: cat.name,
+      iconUrl: cat.iconUrl,
+    }));
   }
 
   @Get(':habitId')

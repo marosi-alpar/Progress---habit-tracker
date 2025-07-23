@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsBoolean,
   IsDateString,
   IsEnum,
   IsInt,
@@ -9,6 +10,7 @@ import {
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { ScheduleStatus } from '../entities/schedule.entity';
+import { RepeatPattern } from '../enums/repeat-pattern.enum';
 
 export class CreateScheduleDto {
   @ApiProperty()
@@ -33,7 +35,9 @@ export class CreateScheduleDto {
   date: Date;
 
   @ApiProperty({ default: false })
-  is_custom: boolean;
+  @IsOptional() // <-- ezt add hozzá
+  @IsBoolean() // <-- ez is fontos!
+  is_custom?: boolean;
 
   @ApiProperty({
     required: false,
@@ -45,4 +49,17 @@ export class CreateScheduleDto {
   @IsArray()
   @IsInt({ each: true })
   participantIds?: number[];
+
+  @ApiProperty({
+    enum: RepeatPattern,
+    description: 'How the schedule should repeat',
+    default: RepeatPattern.NONE,
+  })
+  @IsEnum(RepeatPattern)
+  repeatPattern: RepeatPattern;
+
+  @ApiProperty({ required: false, default: 30 })
+  @IsOptional()
+  @IsNumber()
+  repeatDays?: number;
 }
