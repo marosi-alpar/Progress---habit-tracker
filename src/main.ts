@@ -54,6 +54,8 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   console.log('Static assets path:', join(__dirname, '..', 'public'));
+  console.log('Server running on host ', process.env.HOST || '0.0.0.0');
+  console.log('Server running on port ', process.env.PORT || 8080);
   console.log('Server running on: http://localhost:3000');
 
   const dataSource = app.get(DataSource);
@@ -76,6 +78,6 @@ async function bootstrap() {
 
   console.log('💾 HabitCategory újratöltve a public/icons mappából.');
 
-  await app.listen(3000);
+  await app.listen(process.env.PORT || 8080, process.env.HOST || '0.0.0.0');
 }
 bootstrap();

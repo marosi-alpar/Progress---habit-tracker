@@ -31,6 +31,7 @@ import { HabitCategory } from './habit/entities/habit-category.entity';
       connection: {
         host: process.env.REDIS_HOST || 'localhost',
         port: Number(process.env.REDIS_PORT) || 6379,
+        password: process.env.REDIS_PASSWORD,
       },
     }),
     NestScheduleModule.forRoot(),
@@ -78,4 +79,4 @@ import { HabitCategory } from './habit/entities/habit-category.entity';
     ScheduleCronService,
   ],
 })
-export class AppModule {}
+export class AppModule { }
