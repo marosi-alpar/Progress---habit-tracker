@@ -1,6 +1,5 @@
 import { IsNotEmpty, IsOptional, IsString, IsNumber } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { HabitFrequency } from '../entities/habit.entity';
 
 export class CreateHabitDto {
   @ApiProperty({ example: 'Morning Run' })
@@ -22,8 +21,4 @@ export class CreateHabitDto {
   @IsString()
   @IsNotEmpty()
   goal: string;
-
-  @ApiProperty({ enum: HabitFrequency, example: HabitFrequency.DAILY })
-  @IsNotEmpty()
-  frequency: HabitFrequency;
 }

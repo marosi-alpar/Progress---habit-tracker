@@ -3,6 +3,7 @@ import { ScheduleStatus } from '../entities/schedule.entity';
 import { HabitResponseDto } from 'src/habit/dto/habit-response.dto';
 import { IsOptional } from 'class-validator';
 import { ProgressResponseDto } from 'src/progress/dto/progress-response.dto';
+import { ScheduleType } from '../enums/schedule-type.enum';
 export class ScheduleResponseDto {
   @ApiProperty()
   id: number;
@@ -31,9 +32,9 @@ export class ScheduleResponseDto {
   @ApiProperty({ type: () => HabitResponseDto })
   habit: HabitResponseDto;
 
-  @ApiProperty({ required: false, nullable: true })
+  @ApiProperty({ required: false, type: [ProgressResponseDto] })
   @IsOptional()
-  progress?: ProgressResponseDto | null;
+  progress?: ProgressResponseDto[];
 
   @ApiProperty({
     required: false,
@@ -60,4 +61,11 @@ export class ScheduleResponseDto {
     email: string;
     profile_image: string;
   }[];
+
+  @ApiProperty({ enum: ScheduleType })
+  type: ScheduleType;
+
+  @ApiProperty({ required: false, example: 30 })
+  @IsOptional()
+  duration_minutes?: number;
 }

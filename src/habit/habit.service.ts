@@ -99,7 +99,6 @@ export class HabitService {
       description: habit.description,
       category: habit.category,
       goal: habit.goal,
-      frequency: habit.frequency,
       created_at: habit.created_at,
       updated_at: habit.updated_at,
     };

@@ -12,6 +12,7 @@ import {
 import { User } from '../../user/entities/user.entity';
 import { Habit } from '../../habit/entities/habit.entity';
 import { Progress } from '../../progress/entities/progress.entity';
+import { ScheduleType } from '../enums/schedule-type.enum';
 
 export enum ScheduleStatus {
   PLANNED = 'Planned',
@@ -43,6 +44,9 @@ export class Schedule {
   @Column({ nullable: true })
   end_time: Date;
 
+  @Column({ type: 'int', nullable: true })
+  duration_minutes?: number;
+
   @Column({ type: 'enum', enum: ScheduleStatus })
   status: ScheduleStatus;
 
@@ -51,6 +55,9 @@ export class Schedule {
 
   @Column({ default: false })
   is_custom: boolean;
+
+  @Column({ type: 'enum', enum: ScheduleType, default: ScheduleType.CUSTOM })
+  type: ScheduleType;
 
   @CreateDateColumn()
   created_at: Date;

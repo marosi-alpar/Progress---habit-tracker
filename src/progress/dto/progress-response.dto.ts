@@ -1,5 +1,6 @@
 // progress/dto/progress-response.dto.ts
 import { ApiProperty } from '@nestjs/swagger';
+import { IsBoolean } from 'class-validator';
 
 export class ProgressResponseDto {
   @ApiProperty()
@@ -18,6 +19,7 @@ export class ProgressResponseDto {
   notes?: string;
 
   @ApiProperty()
+  @IsBoolean()
   is_completed: boolean;
 
   @ApiProperty()
