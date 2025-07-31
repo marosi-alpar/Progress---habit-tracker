@@ -24,6 +24,7 @@ import {
 import { ResetPasswordDto } from './dto/reset.password.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as Multer from 'multer';
+import { Tokens } from './types';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -129,7 +130,7 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'Tokens refreshed successfully.',
-    type: AuthResponseDto,
+    type: Tokens,
   })
   async refreshTokens(
     @GetCurrentUserId() userId: number,
