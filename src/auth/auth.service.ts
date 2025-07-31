@@ -15,7 +15,8 @@ import { UserResponseDto } from 'src/user/dtos/user-response.dto';
 import { AuthProvider } from './enums';
 import { User } from 'src/user/entities/user.entity';
 import { ResetPasswordDto } from './dto/reset.password.dto';
-
+import * as Multer from 'multer';
+import { ProfileResponseDto } from 'src/profile/dto/profile-response.dto';
 @Injectable()
 export class AuthService {
   private client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -57,22 +58,37 @@ export class AuthService {
   private async createUserResponseForAuth(
     user: User,
     tokens: Tokens,
-    message: string = 'Login successful',
+    message = 'Login successful',
   ): Promise<AuthResponseDto> {
+    const profileDto: ProfileResponseDto | null = user.profile
+      ? {
+          id: user.profile.id,
+          username: user.profile.username,
+          description: user.profile.description,
+          profileImageUrl: user.profile.profileImageUrl,
+          profileImageBase64: user.profile.profileImageData
+            ? user.profile.profileImageData.toString('base64')
+            : undefined,
+          coverImageUrl: user.profile.coverImageUrl,
+          fcmToken: user.profile.fcmToken,
+          preferences: user.profile.preferences,
+          created_at: user.profile.created_at,
+          updated_at: user.profile.updated_at,
+        }
+      : null;
+
     const safeUser: UserResponseDto = {
       id: user.id,
       email: user.email,
       auth_provider: user.auth_provider,
-      profile: user.profile,
+      profile: profileDto,
     };
 
-    const response: AuthResponseDto = {
+    return {
       message,
       user: safeUser,
       tokens,
     };
-
-    return response;
   }
 
   async handleGoogleAuth(idToken: string) {
@@ -120,24 +136,45 @@ export class AuthService {
     return this.userService.createUser(googleUser);
   }
 
-  async signupLocal(dto: AuthDto): Promise<AuthResponseDto> {
+  async signupLocal(
+    dto: AuthDto,
+    profileImage?: Multer.File,
+  ): Promise<AuthResponseDto> {
+    // 1. Jelszó hash-elése
     const hash = await this.hashData(dto.password);
 
+    // 2. Felhasználó és profil létrehozása
     const createdUser = await this.userService.createUser({
       username: dto.username,
       email: dto.email,
       password: hash,
     });
 
-    const tokens = await this.getTokens(
-      createdUser.id,
-      createdUser.email,
-      createdUser.profile.id,
-    );
-    await this.updateRtHash(createdUser.id, tokens.refreshToken);
+    // 3. Kép mentése, ha van
+    if (profileImage) {
+      await this.userService.updateUserProfile(createdUser.id, {
+        profileImageData: profileImage.buffer,
+        profileImageMimeType: profileImage.mimetype,
+      });
+    }
 
+    // 4. Újratöltjük a user-t, hogy a frissített profil benne legyen
+    const freshUser = await this.userService.findOne(dto.email);
+    const fullProfile = await this.userService.findFullProfileByUserId(
+      freshUser.id,
+    );
+    freshUser.profile = fullProfile;
+    // 5. Tokenek generálása
+    const tokens = await this.getTokens(
+      freshUser.id,
+      freshUser.email,
+      freshUser.profile.id,
+    );
+    await this.updateRtHash(freshUser.id, tokens.refreshToken);
+
+    // 6. Válasz összeállítása
     return await this.createUserResponseForAuth(
-      createdUser,
+      freshUser,
       tokens,
       'Signup successful',
     );

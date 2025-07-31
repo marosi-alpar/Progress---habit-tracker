@@ -13,6 +13,9 @@ export class ProfileResponseDto {
   @ApiProperty()
   profileImageUrl?: string;
 
+  @ApiProperty({ required: false })
+  profileImageBase64?: string;
+
   @ApiProperty()
   coverImageUrl?: string;
 

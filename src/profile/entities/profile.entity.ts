@@ -26,6 +26,12 @@ export class Profile {
   @Column({ type: 'text', nullable: true })
   profileImageUrl?: string;
 
+  @Column({ type: 'bytea', nullable: true })
+  profileImageData?: Buffer;
+
+  @Column({ type: 'varchar', nullable: true })
+  profileImageMimeType?: string;
+
   @Column({ type: 'text', nullable: true })
   coverImageUrl?: string;
 

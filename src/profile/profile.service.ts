@@ -48,6 +48,19 @@ export class ProfileService {
   async findOne(id: number, currentUserId?: number): Promise<any> {
     const profile = await this.profileRepository.findOne({
       where: { id },
+      select: [
+        'id',
+        'username',
+        'description',
+        'profileImageUrl',
+        'profileImageData',
+        'profileImageMimeType',
+        'coverImageUrl',
+        'fcmToken',
+        'preferences',
+        'created_at',
+        'updated_at',
+      ],
     });
     if (!profile) {
       throw new NotFoundException(`Profile with ID ${id} not found`);
@@ -85,5 +98,28 @@ export class ProfileService {
     console.log(token);
     profile.fcmToken = token.token;
     return this.profileRepository.save(profile);
+  }
+
+  async save(profile: Profile): Promise<Profile> {
+    return this.profileRepository.save(profile);
+  }
+
+  async findOneWithImage(id: number): Promise<Profile> {
+    return this.profileRepository.findOne({
+      where: { id },
+      select: [
+        'id',
+        'username',
+        'description',
+        'profileImageUrl',
+        'profileImageData',
+        'profileImageMimeType',
+        'coverImageUrl',
+        'fcmToken',
+        'preferences',
+        'created_at',
+        'updated_at',
+      ],
+    });
   }
 }

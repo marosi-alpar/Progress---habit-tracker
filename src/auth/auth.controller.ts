@@ -6,6 +6,8 @@ import {
   UseGuards,
   Inject,
   HttpCode,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthDto, AuthResponseDto, SignInDto } from './dto';
@@ -17,8 +19,11 @@ import {
   ApiBody,
   ApiResponse,
   ApiBearerAuth,
+  ApiConsumes,
 } from '@nestjs/swagger';
 import { ResetPasswordDto } from './dto/reset.password.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import * as Multer from 'multer';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -48,17 +53,43 @@ export class AuthController {
   @Public()
   @Post('local/signup')
   @HttpCode(HttpStatus.CREATED)
+  @UseInterceptors(FileInterceptor('profileImage'))
   @ApiOperation({
-    summary: 'Local Sign-Up',
-    description: 'Register user with email and password.',
+    summary: 'Local Sign-Up with optional profile image',
+    description:
+      'Register user with email, password and optional profile image.',
   })
   @ApiResponse({
     status: 201,
     description: 'Successful registration.',
     type: AuthResponseDto,
   })
-  async signupLocal(@Body() dto: AuthDto): Promise<AuthResponseDto> {
-    return this.authService.signupLocal(dto);
+  @ApiConsumes('multipart/form-data') // 💡 Ezt feltétlenül add hozzá
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        username: { type: 'string', example: 'john_doe' },
+        email: { type: 'string', format: 'email', example: 'john@example.com' },
+        password: {
+          type: 'string',
+          format: 'password',
+          example: 'StrongPass123!',
+        },
+        profileImage: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+      required: ['username', 'email', 'password'],
+    },
+  })
+  async signupLocal(
+    @UploadedFile() profileImage: Multer.File,
+    @Body() dto: AuthDto,
+  ): Promise<AuthResponseDto> {
+    console.log('profile image binary: ', profileImage);
+    return this.authService.signupLocal(dto, profileImage);
   }
 
   @Public()

@@ -112,6 +112,9 @@ export class UserService {
       username: profile.username,
       description: profile.description,
       profileImageUrl: profile.profileImageUrl,
+      profileImageBase64: profile.profileImageData
+        ? profile.profileImageData.toString('base64')
+        : undefined,
       coverImageUrl: profile.coverImageUrl,
       fcmToken: profile.fcmToken,
       preferences: profile.preferences,
@@ -122,5 +125,33 @@ export class UserService {
 
   async updatePassword(userId: number, newHashedPassword: string) {
     await this.userRepo.update({ id: userId }, { password: newHashedPassword });
+  }
+
+  async updateUserProfile(
+    userId: number,
+    updates: Partial<Profile>,
+  ): Promise<Profile> {
+    const user = await this.userRepo.findOne({
+      where: { id: userId },
+      relations: ['profile'],
+    });
+
+    if (!user || !user.profile) {
+      throw new Error('User or profile not found');
+    }
+
+    Object.assign(user.profile, updates);
+
+    return this.profileService.save(user.profile);
+  }
+
+  async findFullProfileByUserId(userId: number): Promise<Profile> {
+    const user = await this.userRepo.findOne({
+      where: { id: userId },
+      relations: ['profile'],
+    });
+
+    if (!user?.profile) throw new Error('Profile not found');
+    return this.profileService.findOneWithImage(user.profile.id);
   }
 }

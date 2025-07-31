@@ -21,6 +21,7 @@ import {
 } from '@nestjs/swagger';
 import { ProfileResponseDto } from './dto/profile-response.dto';
 import { UpdateFcmTokenDto } from './dto/update-fcm-token.dto';
+import { Profile } from './entities/profile.entity';
 
 @ApiTags('Profile')
 @ApiBearerAuth('access-token')
@@ -58,7 +59,9 @@ export class ProfileController {
     type: ProfileResponseDto,
   })
   async findMe(@GetCurrentUser('profileId') id: number) {
-    return await this.profileService.findOne(id, id);
+    const profile = await this.profileService.findOne(id, id);
+    // console.log('base64: ', profile.profileImageData.toString('base64'));
+    return this.toResponse(profile);
   }
 
   @Get(':id')
@@ -72,7 +75,9 @@ export class ProfileController {
     @Param('id', ParseIntPipe) id: number,
     @GetCurrentUser('profileId') currentUserId: number,
   ) {
-    return await this.profileService.findOne(id, currentUserId);
+    const profile = await this.profileService.findOne(id, currentUserId);
+    // console.log('base64: ', profile.profileImageData.toString('base64'));
+    return this.toResponse(profile);
   }
 
   @Patch()
@@ -105,5 +110,22 @@ export class ProfileController {
     @Body() token: UpdateFcmTokenDto,
   ) {
     return await this.profileService.updateFcmToken(id, token);
+  }
+
+  private toResponse(profile: Profile): ProfileResponseDto {
+    return {
+      id: profile.id,
+      username: profile.username,
+      description: profile.description,
+      profileImageUrl: profile.profileImageUrl,
+      profileImageBase64: profile.profileImageData
+        ? profile.profileImageData.toString('base64')
+        : undefined,
+      coverImageUrl: profile.coverImageUrl,
+      fcmToken: profile.fcmToken,
+      preferences: profile.preferences,
+      created_at: profile.created_at,
+      updated_at: profile.updated_at,
+    };
   }
 }
