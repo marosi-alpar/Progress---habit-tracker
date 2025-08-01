@@ -291,7 +291,7 @@ export class ScheduleService {
         user: { id: userId },
         date: Between(start, end),
       },
-      relations: ['habit', 'progress'],
+      relations: ['habit', 'progress', 'participants'],
     });
 
     return schedules.map((s) => this.mapToResponseDto(s, s.habit));
