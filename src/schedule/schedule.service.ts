@@ -19,6 +19,7 @@ import {
   RepeatPattern,
 } from './dto/create-reccuring-schedule.dto';
 import { ScheduleType } from './enums/schedule-type.enum';
+import { CreateWeekdayRecurringDto } from './dto/create-weekday-recurring.dto';
 
 @Injectable()
 export class ScheduleService {
@@ -295,6 +296,109 @@ export class ScheduleService {
     });
 
     return schedules.map((s) => this.mapToResponseDto(s, s.habit));
+  }
+
+  async createWeekdayRecurring(
+    dto: CreateWeekdayRecurringDto,
+    userId: number,
+  ): Promise<ScheduleResponseDto[]> {
+    const {
+      habitId,
+      start_time,
+      end_time,
+      duration_minutes,
+      daysOfWeek,
+      numberOfWeeks,
+      participantIds = [],
+    } = dto;
+
+    if (!daysOfWeek || daysOfWeek.length === 0) {
+      throw new BadRequestException('At least one dayOfWeek is required');
+    }
+
+    // Habit ellenőrzés
+    const habit = await this.habitRepo.findOne({
+      where: { id: habitId, user: { id: userId } },
+    });
+    if (!habit) throw new NotFoundException('Habit not found or unauthorized');
+
+    // Résztvevők betöltése
+    const participants = participantIds.length
+      ? await this.userRepo.findBy({ id: In(participantIds) })
+      : [];
+
+    // Időtartam számítása
+    let computedDuration = duration_minutes;
+    let computedEndTime = end_time;
+    if (!computedDuration && end_time) {
+      const diff =
+        new Date(end_time).getTime() - new Date(start_time).getTime();
+      if (diff <= 0)
+        throw new BadRequestException('end_time must be after start_time');
+      computedDuration = Math.floor(diff / 60000);
+    }
+    if (!computedEndTime && duration_minutes) {
+      computedEndTime = new Date(
+        new Date(start_time).getTime() + duration_minutes * 60000,
+      );
+    }
+    if (!computedDuration) {
+      throw new BadRequestException(
+        'Either end_time or duration_minutes is required',
+      );
+    }
+
+    const schedules: Schedule[] = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const totalDays = numberOfWeeks * 7;
+    const baseStart = new Date(start_time);
+
+    for (let i = 0; i < totalDays; i++) {
+      const currentDate = new Date(today);
+      currentDate.setDate(today.getDate() + i);
+
+      // Csak mai vagy jövőbeli napokra
+      if (currentDate < today) continue;
+
+      const day = currentDate.getDay();
+      if (!daysOfWeek.includes(day)) continue;
+
+      const scheduledStart = new Date(currentDate);
+      scheduledStart.setHours(
+        baseStart.getHours(),
+        baseStart.getMinutes(),
+        0,
+        0,
+      );
+
+      const scheduledEnd = new Date(
+        scheduledStart.getTime() + computedDuration * 60000,
+      );
+
+      schedules.push(
+        this.scheduleRepo.create({
+          user: { id: userId } as any,
+          habit,
+          date: currentDate,
+          start_time: scheduledStart,
+          end_time: scheduledEnd,
+          duration_minutes: computedDuration,
+          participants,
+          is_custom: false,
+          type: ScheduleType.RECURRING,
+          status: ScheduleStatus.PLANNED,
+        }),
+      );
+    }
+
+    const saved = await this.scheduleRepo.save(schedules);
+    for (const s of saved) {
+      await this.notificationQueueService.scheduleNotification(s);
+    }
+
+    return saved.map((s) => this.mapToResponseDto(s, habit));
   }
 
   async markMissedSchedulesAsSkipped() {

@@ -25,6 +25,7 @@ import { GetCurrentUserId } from 'src/auth/common/decorators';
 import { GetSchedulesByDateQueryDto } from './dto/get-schedule-by-date-query.dto';
 import { CreateCustomScheduleDto } from './dto/create-custom-schedule.dto';
 import { CreateRecurringScheduleDto } from './dto/create-reccuring-schedule.dto';
+import { CreateWeekdayRecurringDto } from './dto/create-weekday-recurring.dto';
 
 @ApiTags('Schedule')
 @ApiBearerAuth('access-token')
@@ -130,5 +131,19 @@ export class ScheduleController {
     @GetCurrentUserId() userId: number,
   ): Promise<void> {
     return this.scheduleService.remove(id, userId);
+  }
+
+  @Post('recurring/weekdays')
+  @ApiOperation({ summary: 'Create schedules for specific weekdays' })
+  @ApiResponse({
+    status: 201,
+    description: 'Schedules created for selected weekdays',
+    type: [ScheduleResponseDto],
+  })
+  async createWeekdayRecurring(
+    @GetCurrentUserId() userId: number,
+    @Body() dto: CreateWeekdayRecurringDto,
+  ): Promise<ScheduleResponseDto[]> {
+    return this.scheduleService.createWeekdayRecurring(dto, userId);
   }
 }
