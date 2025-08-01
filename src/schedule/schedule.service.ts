@@ -260,7 +260,7 @@ export class ScheduleService {
     await this.scheduleRepo.save({ ...schedule, ...updateScheduleDto });
     const updated = await this.scheduleRepo.findOne({
       where: { id },
-      relations: ['habit'],
+      relations: ['habit', 'progress', 'participants'],
     });
 
     return this.mapToResponseDto(updated, updated.habit);

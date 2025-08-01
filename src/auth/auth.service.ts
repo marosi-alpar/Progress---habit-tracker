@@ -63,6 +63,7 @@ export class AuthService {
     const profileDto: ProfileResponseDto | null = user.profile
       ? {
           id: user.profile.id,
+          email: user.email,
           username: user.profile.username,
           description: user.profile.description,
           profileImageUrl: user.profile.profileImageUrl,

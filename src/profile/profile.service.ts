@@ -42,12 +42,13 @@ export class ProfileService {
   }
 
   async findAll(): Promise<Profile[]> {
-    return this.profileRepository.find();
+    return this.profileRepository.find({ relations: ['user'] });
   }
 
   async findOne(id: number, currentUserId?: number): Promise<any> {
     const profile = await this.profileRepository.findOne({
       where: { id },
+      relations: ['user'],
       select: [
         'id',
         'username',
@@ -107,6 +108,7 @@ export class ProfileService {
   async findOneWithImage(id: number): Promise<Profile> {
     return this.profileRepository.findOne({
       where: { id },
+      relations: ['user'],
       select: [
         'id',
         'username',

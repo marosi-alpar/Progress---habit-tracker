@@ -27,10 +27,14 @@ export class UserService {
     const users = await this.userRepo.find();
     return users.map((user) => this.mapToResponseDto(user));
   }
-  async createUser({ username, email, password }: AuthDto) {
+  async createUser({
+    username,
+    email,
+    password,
+  }: AuthDto): Promise<UserResponseDto> {
     const user = this.userRepo.create({ email, password });
 
-    // blank profile for the user
+    // blank profile
     const profile = await this.profileService.create({
       username,
       userId: user.id,
@@ -38,7 +42,28 @@ export class UserService {
 
     user.profile = profile;
 
-    return this.userRepo.save(user);
+    const savedUser = await this.userRepo.save(user);
+
+    return {
+      id: savedUser.id,
+      email: savedUser.email,
+      auth_provider: savedUser.auth_provider,
+      profile: {
+        id: savedUser.profile.id,
+        email: savedUser.email, // fontos
+        username: savedUser.profile.username,
+        description: savedUser.profile.description,
+        profileImageUrl: savedUser.profile.profileImageUrl,
+        profileImageBase64: savedUser.profile.profileImageData
+          ? savedUser.profile.profileImageData.toString('base64')
+          : undefined,
+        coverImageUrl: savedUser.profile.coverImageUrl,
+        fcmToken: savedUser.profile.fcmToken,
+        preferences: savedUser.profile.preferences,
+        created_at: savedUser.profile.created_at,
+        updated_at: savedUser.profile.updated_at,
+      },
+    };
   }
 
   async createGoogleUser({
@@ -109,6 +134,7 @@ export class UserService {
     if (!profile) return null;
     return {
       id: profile.id,
+      email: profile.user.email,
       username: profile.username,
       description: profile.description,
       profileImageUrl: profile.profileImageUrl,

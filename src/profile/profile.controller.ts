@@ -115,6 +115,7 @@ export class ProfileController {
   private toResponse(profile: Profile): ProfileResponseDto {
     return {
       id: profile.id,
+      email: profile.user.email,
       username: profile.username,
       description: profile.description,
       profileImageUrl: profile.profileImageUrl,
