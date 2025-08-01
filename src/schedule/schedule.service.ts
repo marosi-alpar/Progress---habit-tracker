@@ -230,7 +230,7 @@ export class ScheduleService {
   async findAll(userId: number): Promise<ScheduleResponseDto[]> {
     const schedules = await this.scheduleRepo.find({
       where: { user: { id: userId } },
-      relations: ['habit'],
+      relations: ['habit', 'participants', 'progress'],
     });
     return schedules.map((s) => this.mapToResponseDto(s, s.habit));
   }
