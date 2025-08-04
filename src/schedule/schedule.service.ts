@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, In, LessThan, Repository } from 'typeorm';
+import { Between, Brackets, In, LessThan, Repository } from 'typeorm';
 import { Schedule, ScheduleStatus } from './entities/schedule.entity';
 import { CreateScheduleDto } from './dto/create-schedule.dto';
 import { UpdateScheduleDto } from './dto/update-schedule.dto';
@@ -111,7 +111,7 @@ export class ScheduleService {
     const saved = await this.scheduleRepo.save(schedule);
     await this.notificationQueueService.scheduleNotification(saved);
 
-    return this.mapToResponseDto(saved, habit);
+    return this.mapToResponseDto(saved, habit, userId);
   }
 
   async createRecurring(
@@ -225,25 +225,44 @@ export class ScheduleService {
       await this.notificationQueueService.scheduleNotification(s);
     }
 
-    return saved.map((s) => this.mapToResponseDto(s, habit));
+    return saved.map((s) => this.mapToResponseDto(s, habit, userId));
   }
 
   async findAll(userId: number): Promise<ScheduleResponseDto[]> {
-    const schedules = await this.scheduleRepo.find({
-      where: { user: { id: userId } },
-      relations: ['habit', 'participants', 'progress'],
-    });
-    return schedules.map((s) => this.mapToResponseDto(s, s.habit));
+    const schedules = await this.scheduleRepo
+      .createQueryBuilder('schedule')
+      .leftJoinAndSelect('schedule.habit', 'habit')
+      .leftJoinAndSelect('schedule.participants', 'participants')
+      .leftJoinAndSelect('participants.profile', 'participantProfile')
+      .leftJoinAndSelect('schedule.progress', 'progress')
+      .where('schedule.userId = :userId', { userId })
+      .orWhere('participants.id = :userId', { userId })
+      .getMany();
+
+    return schedules.map((s) => this.mapToResponseDto(s, s.habit, userId));
   }
 
   async findOne(id: number, userId: number): Promise<ScheduleResponseDto> {
-    const schedule = await this.scheduleRepo.findOne({
-      where: { id, user: { id: userId } },
-      relations: ['habit', 'progress', 'participants'],
-    });
+    const schedule = await this.scheduleRepo
+      .createQueryBuilder('schedule')
+      .leftJoinAndSelect('schedule.habit', 'habit')
+      .leftJoinAndSelect('schedule.participants', 'participants')
+      .leftJoinAndSelect('participants.profile', 'participantProfile')
+      .leftJoinAndSelect('schedule.progress', 'progress')
+      .where('schedule.id = :id', { id })
+      .andWhere(
+        new Brackets((qb) => {
+          qb.where('schedule.userId = :userId', { userId }).orWhere(
+            'participants.id = :userId',
+            { userId },
+          );
+        }),
+      )
+      .getOne();
+
     if (!schedule)
       throw new NotFoundException('Schedule not found or unauthorized');
-    return this.mapToResponseDto(schedule, schedule.habit);
+    return this.mapToResponseDto(schedule, schedule.habit, userId);
   }
 
   async update(
@@ -264,7 +283,7 @@ export class ScheduleService {
       relations: ['habit', 'progress', 'participants'],
     });
 
-    return this.mapToResponseDto(updated, updated.habit);
+    return this.mapToResponseDto(updated, updated.habit, userId);
   }
 
   async remove(id: number, userId: number): Promise<void> {
@@ -287,15 +306,23 @@ export class ScheduleService {
     const end = new Date(date);
     end.setHours(23, 59, 59, 999);
 
-    const schedules = await this.scheduleRepo.find({
-      where: {
-        user: { id: userId },
-        date: Between(start, end),
-      },
-      relations: ['habit', 'progress', 'participants'],
-    });
+    const schedules = await this.scheduleRepo
+      .createQueryBuilder('schedule')
+      .leftJoinAndSelect('schedule.habit', 'habit')
+      .leftJoinAndSelect('schedule.participants', 'participants')
+      .leftJoinAndSelect('participants.profile', 'participantProfile')
+      .leftJoinAndSelect('schedule.progress', 'progress')
+      .where('schedule.userId = :userId', { userId })
+      .andWhere('schedule.date BETWEEN :start AND :end', { start, end })
+      .orWhere((qb) => {
+        qb.where('participants.id = :userId', { userId }).andWhere(
+          'schedule.date BETWEEN :start AND :end',
+          { start, end },
+        );
+      })
+      .getMany();
 
-    return schedules.map((s) => this.mapToResponseDto(s, s.habit));
+    return schedules.map((s) => this.mapToResponseDto(s, s.habit, userId));
   }
 
   async createWeekdayRecurring(
@@ -398,7 +425,7 @@ export class ScheduleService {
       await this.notificationQueueService.scheduleNotification(s);
     }
 
-    return saved.map((s) => this.mapToResponseDto(s, habit));
+    return saved.map((s) => this.mapToResponseDto(s, habit, userId));
   }
 
   async markMissedSchedulesAsSkipped() {
@@ -427,10 +454,16 @@ export class ScheduleService {
   private mapToResponseDto(
     schedule: Schedule,
     habit: Habit,
+    currentUserId?: number,
   ): ScheduleResponseDto {
-    const latestProgress = schedule.progress; // vagy logika szerint választhatsz
+    const isParticipantOnly = schedule.participants?.some(
+      (u) => u.id == currentUserId,
+    );
 
-    console.log(latestProgress);
+    if (schedule.id == 180) {
+      console.log('currId:', currentUserId);
+      console.log('isParticipant: ', isParticipantOnly);
+    }
 
     return {
       id: schedule.id,
@@ -470,6 +503,7 @@ export class ScheduleService {
           created_at: p.created_at,
           updated_at: p.updated_at,
         })) || [],
+      is_participant_only: isParticipantOnly,
     };
   }
 }

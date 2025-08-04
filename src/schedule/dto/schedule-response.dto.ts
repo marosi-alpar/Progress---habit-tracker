@@ -68,4 +68,10 @@ export class ScheduleResponseDto {
   @ApiProperty({ required: false, example: 30 })
   @IsOptional()
   duration_minutes?: number;
+
+  @ApiProperty({
+    description:
+      'True if the current user is only a participant, not the owner',
+  })
+  is_participant_only: boolean;
 }
