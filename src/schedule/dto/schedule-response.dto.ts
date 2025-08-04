@@ -74,4 +74,8 @@ export class ScheduleResponseDto {
       'True if the current user is only a participant, not the owner',
   })
   is_participant_only: boolean;
+
+  @ApiProperty({ required: false, example: 'Morning run at the park' })
+  @IsOptional()
+  notes?: string;
 }

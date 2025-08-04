@@ -70,4 +70,12 @@ export class CreateRecurringScheduleDto {
   @IsArray()
   @IsInt({ each: true })
   participantIds?: number[];
+
+  @ApiProperty({
+    required: false,
+    description: 'Optional notes for the schedule',
+    example: 'Weekly standup meeting',
+  })
+  @IsOptional()
+  notes?: string;
 }

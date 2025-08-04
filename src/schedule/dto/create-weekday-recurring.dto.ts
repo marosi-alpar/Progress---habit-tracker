@@ -55,4 +55,12 @@ export class CreateWeekdayRecurringDto {
   @IsOptional()
   @IsArray()
   participantIds?: number[];
+
+  @ApiProperty({
+    required: false,
+    description: 'Optional notes for the schedule',
+    example: 'Gym workout plan for selected weekdays',
+  })
+  @IsOptional()
+  notes?: string;
 }

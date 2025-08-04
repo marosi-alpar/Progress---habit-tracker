@@ -48,6 +48,7 @@ export class ScheduleService {
       date,
       participantIds = [],
       is_custom = true,
+      notes,
     } = dto;
 
     // 🔍 1. Validáció: date és start_time nap egyezzen
@@ -106,6 +107,7 @@ export class ScheduleService {
       type: ScheduleType.CUSTOM,
       participants,
       status: ScheduleStatus.PLANNED,
+      notes: notes || '',
     });
 
     const saved = await this.scheduleRepo.save(schedule);
@@ -127,6 +129,7 @@ export class ScheduleService {
       repeatDays = 30,
       participantIds = [],
       is_custom = true,
+      notes,
     } = dto;
 
     // 1. Validáció
@@ -216,6 +219,7 @@ export class ScheduleService {
           is_custom,
           type,
           status: ScheduleStatus.PLANNED,
+          notes: notes || '',
         }),
       );
     }
@@ -272,15 +276,31 @@ export class ScheduleService {
   ): Promise<ScheduleResponseDto> {
     const schedule = await this.scheduleRepo.findOne({
       where: { id, user: { id: userId } },
-      relations: ['habit'],
+      relations: ['habit', 'progress', 'participants'],
     });
     if (!schedule)
       throw new NotFoundException('Schedule not found or unauthorized');
 
-    await this.scheduleRepo.save({ ...schedule, ...updateScheduleDto });
+    let participants = schedule.participants;
+
+    if (
+      updateScheduleDto.participantIds &&
+      updateScheduleDto.participantIds.length > 0
+    ) {
+      participants = await this.userRepo.findBy({
+        id: In(updateScheduleDto.participantIds),
+      });
+    }
+
+    await this.scheduleRepo.save({
+      ...schedule,
+      ...updateScheduleDto,
+      participants, // <-- itt frissítjük a résztvevőket
+    });
+
     const updated = await this.scheduleRepo.findOne({
       where: { id },
-      relations: ['habit', 'progress', 'participants'],
+      relations: ['habit', 'progress', 'participants', 'participants.profile'],
     });
 
     return this.mapToResponseDto(updated, updated.habit, userId);
@@ -337,6 +357,7 @@ export class ScheduleService {
       daysOfWeek,
       numberOfWeeks,
       participantIds = [],
+      notes,
     } = dto;
 
     if (!daysOfWeek || daysOfWeek.length === 0) {
@@ -416,6 +437,7 @@ export class ScheduleService {
           is_custom: false,
           type: ScheduleType.RECURRING,
           status: ScheduleStatus.PLANNED,
+          notes: notes || '',
         }),
       );
     }
@@ -476,6 +498,7 @@ export class ScheduleService {
       updated_at: schedule.updated_at,
       type: schedule.type,
       duration_minutes: schedule.duration_minutes,
+      notes: schedule.notes || null,
       participants:
         schedule.participants?.map((u) => ({
           id: u.id,

@@ -59,6 +59,9 @@ export class Schedule {
   @Column({ type: 'enum', enum: ScheduleType, default: ScheduleType.CUSTOM })
   type: ScheduleType;
 
+  @Column({ nullable: true, default: '' })
+  notes: string;
+
   @CreateDateColumn()
   created_at: Date;
 

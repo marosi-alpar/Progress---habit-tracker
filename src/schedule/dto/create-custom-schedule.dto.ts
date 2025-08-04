@@ -46,4 +46,12 @@ export class CreateCustomScheduleDto {
   @IsArray()
   @IsInt({ each: true })
   participantIds?: number[];
+
+  @ApiProperty({
+    required: false,
+    description: 'Optional notes for the schedule',
+    example: 'Morning run at the park',
+  })
+  @IsOptional()
+  notes?: string;
 }

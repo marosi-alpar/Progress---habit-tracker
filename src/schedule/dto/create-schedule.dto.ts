@@ -62,4 +62,12 @@ export class CreateScheduleDto {
   @IsOptional()
   @IsNumber()
   repeatDays?: number;
+
+  @ApiProperty({
+    required: false,
+    description: 'Optional notes for the schedule',
+    example: 'Grocery shopping after work',
+  })
+  @IsOptional()
+  notes?: string;
 }
