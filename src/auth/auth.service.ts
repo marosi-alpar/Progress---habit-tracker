@@ -226,11 +226,11 @@ export class AuthService {
     const [at, rt] = await Promise.all([
       this.jwtService.signAsync(jwtPayload, {
         secret: process.env.AT_SECRET,
-        expiresIn: '1d',
+        expiresIn: '7d',
       }),
       this.jwtService.signAsync(jwtPayload, {
         secret: process.env.RT_SECRET,
-        expiresIn: '3d',
+        expiresIn: '30d',
       }),
     ]);
 
