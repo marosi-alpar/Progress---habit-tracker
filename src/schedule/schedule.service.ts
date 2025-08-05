@@ -236,6 +236,7 @@ export class ScheduleService {
     const schedules = await this.scheduleRepo
       .createQueryBuilder('schedule')
       .leftJoinAndSelect('schedule.habit', 'habit')
+      .leftJoinAndSelect('habit.category', 'habitCategory')
       .leftJoinAndSelect('schedule.participants', 'participants')
       .leftJoinAndSelect('participants.profile', 'participantProfile')
       .leftJoinAndSelect('schedule.progress', 'progress')
@@ -250,6 +251,7 @@ export class ScheduleService {
     const schedule = await this.scheduleRepo
       .createQueryBuilder('schedule')
       .leftJoinAndSelect('schedule.habit', 'habit')
+      .leftJoinAndSelect('habit.category', 'habitCategory')
       .leftJoinAndSelect('schedule.participants', 'participants')
       .leftJoinAndSelect('participants.profile', 'participantProfile')
       .leftJoinAndSelect('schedule.progress', 'progress')
@@ -329,6 +331,7 @@ export class ScheduleService {
     const schedules = await this.scheduleRepo
       .createQueryBuilder('schedule')
       .leftJoinAndSelect('schedule.habit', 'habit')
+      .leftJoinAndSelect('habit.category', 'habitCategory')
       .leftJoinAndSelect('schedule.participants', 'participants')
       .leftJoinAndSelect('participants.profile', 'participantProfile')
       .leftJoinAndSelect('schedule.progress', 'progress')
