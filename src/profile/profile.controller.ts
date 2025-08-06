@@ -8,6 +8,8 @@ import {
   Delete,
   HttpCode,
   ParseIntPipe,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { CreateProfileDto } from './dto/create-profile.dto';
@@ -18,10 +20,15 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
 } from '@nestjs/swagger';
 import { ProfileResponseDto } from './dto/profile-response.dto';
 import { UpdateFcmTokenDto } from './dto/update-fcm-token.dto';
 import { Profile } from './entities/profile.entity';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { UpdateProfileImageDto } from './dto/update-profile-image.dto';
+import * as Multer from 'multer';
 
 @ApiTags('Profile')
 @ApiBearerAuth('access-token')
@@ -110,6 +117,27 @@ export class ProfileController {
     @Body() token: UpdateFcmTokenDto,
   ) {
     return await this.profileService.updateFcmToken(id, token);
+  }
+
+  @Post('upload-profile-image')
+  @ApiOperation({ summary: 'Upload profile image' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ type: UpdateProfileImageDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Profile image uploaded successfully.',
+    type: ProfileResponseDto,
+  })
+  @UseInterceptors(FileInterceptor('profileImage'))
+  async uploadProfileImage(
+    @GetCurrentUser('profileId') id: number,
+    @UploadedFile() file: Multer.File,
+  ) {
+    const updatedProfile = await this.profileService.updateProfileImage(
+      id,
+      file,
+    );
+    return this.toResponse(updatedProfile); // 🔹 Most már biztos van user.email
   }
 
   private toResponse(profile: Profile): ProfileResponseDto {

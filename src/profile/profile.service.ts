@@ -5,6 +5,7 @@ import { Profile } from './entities/profile.entity';
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { UpdateFcmTokenDto } from './dto/update-fcm-token.dto';
+import * as Multer from 'multer';
 
 @Injectable()
 export class ProfileService {
@@ -122,6 +123,26 @@ export class ProfileService {
         'created_at',
         'updated_at',
       ],
+    });
+  }
+
+  async updateProfileImage(id: number, file: Multer.File): Promise<Profile> {
+    const profile = await this.profileRepository.findOne({ where: { id } });
+    if (!profile) {
+      throw new NotFoundException(`Profile with ID ${id} not found`);
+    }
+
+    // MIME típus mentése
+    profile.profileImageMimeType = file.mimetype;
+    // Bináris adat mentése az adatbázisba
+    profile.profileImageData = file.buffer;
+
+    await this.profileRepository.save(profile);
+
+    // 🔹 Újratöltjük, hogy a user is benne legyen
+    return this.profileRepository.findOne({
+      where: { id },
+      relations: ['user'],
     });
   }
 }
