@@ -61,7 +61,7 @@ import { HabitCategory } from './habit/entities/habit-category.entity';
     FirebaseModule,
     ThrottlerModule.forRootAsync({
       useFactory: () => ({
-        throttlers: [{ limit: 10, ttl: 60 * 1000 }],
+        throttlers: [{ limit: 100, ttl: 60 * 1000 }],
       }),
     }),
   ],
@@ -79,4 +79,4 @@ import { HabitCategory } from './habit/entities/habit-category.entity';
     ScheduleCronService,
   ],
 })
-export class AppModule { }
+export class AppModule {}
