@@ -1,6 +1,7 @@
 import {
   ForbiddenException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { CreateUserDto } from 'src/user/dtos/create-user.dto';
@@ -17,12 +18,14 @@ import { User } from 'src/user/entities/user.entity';
 import { ResetPasswordDto } from './dto/reset.password.dto';
 import * as Multer from 'multer';
 import { ProfileResponseDto } from 'src/profile/dto/profile-response.dto';
+import { MailjetService } from 'src/mail/mailjet.service';
 @Injectable()
 export class AuthService {
   private client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
+    private readonly mailjetService: MailjetService,
   ) {}
 
   // async validateGitHubUser({ accessToken }: GithubSignUpDto) {
@@ -250,5 +253,52 @@ export class AuthService {
     await this.userService.updatePassword(userId, hashedPassword);
 
     return 'Password updated successfully';
+  }
+
+  async resetPasswordViaEmail(email: string): Promise<void> {
+    const user = await this.userService.findOne(email);
+
+    if (!user) {
+      throw new NotFoundException('No user found with that email');
+    }
+
+    const newPassword = this.generateRandomPassword();
+    const hashed = await bcrypt.hash(newPassword, 10);
+
+    // jelszó frissítése
+    await this.userService.updatePassword(user.id, hashed);
+
+    const html = `
+  <div style="font-family: Arial, sans-serif; color: #333; padding: 20px;">
+    <div style="text-align: center; margin-bottom: 30px;">
+      <h1 style="color: #4CAF50;">Password Reset</h1>
+    </div>
+
+    <p>Hello,</p>
+    <p>Your new password is:</p>
+    <p style="font-size: 18px; font-weight: bold; background: #f4f4f4; padding: 10px; display: inline-block;">
+      ${newPassword}
+    </p>
+
+    <p>Please log in and change your password as soon as possible.</p>
+
+    <hr style="margin: 40px 0;" />
+    <footer style="font-size: 12px; color: #888; text-align: center;">
+      © ${new Date().getFullYear()} Progr3ss. All rights reserved.
+    </footer>
+  </div>
+`;
+
+    await this.mailjetService.sendEmail(user.email, 'Your New Password', html);
+  }
+
+  generateRandomPassword(length = 10): string {
+    const chars =
+      'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
+    let result = '';
+    for (let i = 0; i < length; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
   }
 }

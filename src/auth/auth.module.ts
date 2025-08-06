@@ -8,12 +8,16 @@ import { AuthService } from './auth.service';
 import { JwtModule } from '@nestjs/jwt';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { AtStrategy, RtStrategy } from './strategies';
+import { PasswordResetService } from './password.reset.service';
+import { FirebaseService } from 'src/firebase/firebase.service';
+import { MailModule } from 'src/mail/mail.module';
 
 @Module({
   imports: [
     ConfigModule.forFeature(googleOauthConfig),
     ConfigModule.forRoot({ isGlobal: true }),
     UserModule,
+    MailModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -33,6 +37,8 @@ import { AtStrategy, RtStrategy } from './strategies';
     JwtStrategy,
     AtStrategy,
     RtStrategy,
+    PasswordResetService,
+    FirebaseService,
   ],
 })
 export class AuthModule {}

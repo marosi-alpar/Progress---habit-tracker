@@ -25,6 +25,8 @@ import { ResetPasswordDto } from './dto/reset.password.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import * as Multer from 'multer';
 import { Tokens } from './types';
+import { PasswordResetService } from './password.reset.service';
+import { RequestPasswordResetDto } from './dto/request.password.reset.dto';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -32,6 +34,7 @@ export class AuthController {
   constructor(
     @Inject('AUTH_SERVICE')
     private authService: AuthService,
+    private readonly passwordResetService: PasswordResetService,
   ) {}
 
   @Public()
@@ -156,5 +159,14 @@ export class AuthController {
   ): Promise<{ message: string }> {
     const msg = await this.authService.resetPassword(userId, dto);
     return { message: msg };
+  }
+  @Public()
+  @Post('reset-password-via-email')
+  @ApiOperation({ summary: 'Reset user password and send via email' })
+  @ApiBody({ schema: { example: { email: 'user@example.com' } } })
+  @ApiResponse({ status: 200, description: 'New password sent to user email' })
+  async resetPasswordViaEmail(@Body('email') email: string) {
+    await this.authService.resetPasswordViaEmail(email);
+    return { message: 'New password sent via email' };
   }
 }
