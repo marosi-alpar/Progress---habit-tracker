@@ -18,7 +18,9 @@ export class Progress {
   @ManyToOne(() => User, (user) => user.progress)
   user: User;
 
-  @ManyToOne(() => Schedule, (schedule) => schedule.progress)
+  @ManyToOne(() => Schedule, (schedule) => schedule.progress, {
+    onDelete: 'CASCADE',
+  })
   schedule: Schedule;
 
   @Column({ nullable: true })
