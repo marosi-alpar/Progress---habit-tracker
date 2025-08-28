@@ -15,6 +15,8 @@ export class FirebaseService implements OnModuleInit {
         credential: admin.credential.cert(require(serviceAccountPath)),
       });
       console.log('✅ Firebase initialized');
+    } else {
+      console.log('Firebase is not initialized');
     }
   }
 
