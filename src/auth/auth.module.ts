@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
-// import { GoogleStrategy } from './strategies/google.strategy';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import googleOauthConfig from './config/google-oauth.config';
 import { UserModule } from 'src/user/user.module';
@@ -14,31 +13,28 @@ import { MailModule } from 'src/mail/mail.module';
 
 @Module({
   imports: [
+    // AppModule-ban legyen: ConfigModule.forRoot({ isGlobal: true })
     ConfigModule.forFeature(googleOauthConfig),
-    ConfigModule.forRoot({ isGlobal: true }),
     UserModule,
-    MailModule,
+    MailModule, // ha nincs MAILJET_* env, a MailModule a NoopMailjetService-t adja
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('AT_SECRET'),
+      useFactory: (cfg: ConfigService) => ({
+        secret: cfg.get<string>('AT_SECRET'),
         signOptions: { expiresIn: '10h' },
       }),
     }),
   ],
   controllers: [AuthController],
   providers: [
-    // GoogleStrategy,
-    {
-      provide: 'AUTH_SERVICE',
-      useClass: AuthService,
-    },
+    { provide: 'AUTH_SERVICE', useClass: AuthService },
     JwtStrategy,
     AtStrategy,
     RtStrategy,
     PasswordResetService,
     FirebaseService,
   ],
+  exports: ['AUTH_SERVICE'],
 })
 export class AuthModule {}

@@ -27,7 +27,6 @@ export class UserService {
     const users = await this.userRepo.find({
       relations: ['profile'],
     });
-    console.log(users);
     return users.map((user) => this.mapToResponseDto(user));
   }
   async createUser({
@@ -125,7 +124,6 @@ export class UserService {
   }
 
   private mapToResponseDto(user: User): UserResponseDto {
-    console.log('User in mapToResponse: ', user);
     return {
       id: user.id,
       email: user.email,
