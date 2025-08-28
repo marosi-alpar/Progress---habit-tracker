@@ -24,7 +24,10 @@ export class UserService {
     return this.userRepo.findOneBy({ id });
   }
   async findAll(): Promise<UserResponseDto[]> {
-    const users = await this.userRepo.find();
+    const users = await this.userRepo.find({
+      relations: ['profile'],
+    });
+    console.log(users);
     return users.map((user) => this.mapToResponseDto(user));
   }
   async createUser({
@@ -122,19 +125,23 @@ export class UserService {
   }
 
   private mapToResponseDto(user: User): UserResponseDto {
+    console.log('User in mapToResponse: ', user);
     return {
       id: user.id,
       email: user.email,
       auth_provider: user.auth_provider,
-      profile: this.mapToProfileResponseDto(user.profile),
+      profile: this.mapToProfileResponseDto(user.profile, user.email),
     };
   }
 
-  private mapToProfileResponseDto(profile: Profile): ProfileResponseDto {
+  private mapToProfileResponseDto(
+    profile: Profile,
+    email?: string,
+  ): ProfileResponseDto {
     if (!profile) return null;
     return {
       id: profile.id,
-      email: profile.user.email,
+      email: email,
       username: profile.username,
       description: profile.description,
       profileImageUrl: profile.profileImageUrl,

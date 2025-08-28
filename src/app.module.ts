@@ -49,9 +49,9 @@ import { HabitCategory } from './habit/entities/habit-category.entity';
       database: process.env.PG_DATABASE,
       entities: [User, Profile, Habit, Schedule, Progress, HabitCategory],
       synchronize: true,
-      ssl: {
-        rejectUnauthorized: false,
-      },
+      // ssl: {
+      //   rejectUnauthorized: false,
+      // },
     }),
     AuthModule,
     HabitModule,
