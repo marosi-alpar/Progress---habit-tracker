@@ -1,6 +1,6 @@
 import { MailjetService } from 'src/mail/mailjet.service';
+import { FirebaseService } from 'src/firebase/firebase.service';
 import * as admin from 'firebase-admin';
-import * as path from 'path';
 import {
   Injectable,
   BadRequestException,
@@ -13,16 +13,8 @@ export class PasswordResetService {
   constructor(
     private readonly userService: UserService,
     private readonly mailjetService: MailjetService,
-  ) {
-    if (!admin.apps.length) {
-      const serviceAccount = require(
-        path.resolve(process.cwd(), 'progr3ss-firebase-adminsdk.json'),
-      );
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-      });
-    }
-  }
+    private readonly firebaseService: FirebaseService, // ✅ FirebaseService injection
+  ) {}
 
   async sendResetPasswordEmail(email: string) {
     if (!email || !email.includes('@')) {
@@ -31,6 +23,13 @@ export class PasswordResetService {
 
     const user = await this.userService.findOne(email);
     if (!user) throw new NotFoundException('User not found');
+
+    // ✅ Ellenőrizzük, hogy a Firebase engedélyezett-e
+    if (!this.isFirebaseAvailable()) {
+      throw new BadRequestException(
+        'Password reset service is currently unavailable',
+      );
+    }
 
     const actionCodeSettings = {
       url: 'https://progr3ss-czhubtascvc8ehfx.westeurope-01.azurewebsites.net/auth/reset-password-complete',
@@ -55,5 +54,10 @@ export class PasswordResetService {
     );
 
     return { message: 'Reset password email sent' };
+  }
+
+  private isFirebaseAvailable(): boolean {
+    // Ellenőrizzük, hogy van-e inicializált Firebase app
+    return admin.apps.length > 0;
   }
 }
