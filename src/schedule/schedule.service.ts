@@ -322,11 +322,7 @@ export class ScheduleService {
     userId: number,
     date: string,
   ): Promise<ScheduleResponseDto[]> {
-    const start = new Date(date);
-    start.setHours(0, 0, 0, 0);
-
-    const end = new Date(date);
-    end.setHours(23, 59, 59, 999);
+    const formattedDate = new Date(date).toISOString().split('T')[0];
 
     const schedules = await this.scheduleRepo
       .createQueryBuilder('schedule')
@@ -335,14 +331,10 @@ export class ScheduleService {
       .leftJoinAndSelect('schedule.participants', 'participants')
       .leftJoinAndSelect('participants.profile', 'participantProfile')
       .leftJoinAndSelect('schedule.progress', 'progress')
-      .where('schedule.userId = :userId', { userId })
-      .andWhere('schedule.date BETWEEN :start AND :end', { start, end })
-      .orWhere((qb) => {
-        qb.where('participants.id = :userId', { userId }).andWhere(
-          'schedule.date BETWEEN :start AND :end',
-          { start, end },
-        );
-      })
+      .where(
+        '(schedule.userId = :userId OR participants.id = :userId) AND CAST(schedule.date AS DATE) = :date',
+        { userId, date: formattedDate },
+      )
       .getMany();
 
     return schedules.map((s) => this.mapToResponseDto(s, s.habit, userId));
