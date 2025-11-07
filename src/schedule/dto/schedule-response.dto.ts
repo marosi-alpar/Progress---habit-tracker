@@ -52,6 +52,7 @@ export class ScheduleResponseDto {
         name: 'Tom',
         email: 'tom@example.com',
         profile_image: 'https://example.com/images/tom.jpg',
+        haveProfileImageBase64: true
       },
     ],
   })
@@ -60,6 +61,7 @@ export class ScheduleResponseDto {
     name: string;
     email: string;
     profile_image: string;
+    haveProfileImageBase64?: boolean;
   }[];
 
   @ApiProperty({ enum: ScheduleType })
