@@ -47,6 +47,8 @@ PG_DATABASE=dbname
 # JWT/Token titkok (csak példaértékek – PROD-ban cseréld!)
 AT_SECRET=pRogr3ss_at
 RT_SECRET=pRogr3ss_rt
+AT_EXPIRES_IN=36h
+RT_EXPIRES_IN=30d
 JWT_SECRET=nagyonTitkosProgr3ssKey!492?79.74
 
 # Redis (Compose hálón a host a service neve: "redis")
@@ -246,6 +248,8 @@ PG_DATABASE=dbname
 
 AT_SECRET=pRogr3ss_at
 RT_SECRET=pRogr3ss_rt
+AT_EXPIRES_IN=36h
+RT_EXPIRES_IN=30d
 JWT_SECRET=nagyonTitkosProgr3ssKey!492?79.74
 
 REDIS_HOST=redis
