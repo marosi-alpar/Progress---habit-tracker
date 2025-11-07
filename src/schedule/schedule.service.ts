@@ -500,6 +500,7 @@ export class ScheduleService {
           name: u.profile.username,
           email: u.email,
           profile_image: u.profile.profileImageUrl,
+          haveProfileImageBase64: u.profile.profileImageData ? true : undefined,
         })) || [],
       habit: {
         id: habit.id,
