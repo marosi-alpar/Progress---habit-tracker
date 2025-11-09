@@ -18,7 +18,8 @@ export class MailjetService {
     this.fromName = process.env.MAILJET_FROM_NAME;
 
     // Ha nincs minden szükséges env, a service no-op módba vált
-    if (!key || !secret || !this.fromEmail || !this.fromName) {
+    if (!key || key == 'optional' || !secret || secret == 'optional'
+      || !this.fromEmail || this.fromEmail == 'optional' || !this.fromName || this.fromName == 'optional') {
       this.enabled = false;
       this.logger.warn(
         'Mailjet disabled: missing MAILJET_* env vars. Emails will NOT be sent.',

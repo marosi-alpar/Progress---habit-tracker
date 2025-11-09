@@ -47,6 +47,8 @@ PG_DATABASE=dbname
 # JWT/Token titkok (csak példaértékek – PROD-ban cseréld!)
 AT_SECRET=pRogr3ss_at
 RT_SECRET=pRogr3ss_rt
+AT_EXPIRES_IN=36h
+RT_EXPIRES_IN=30d
 JWT_SECRET=nagyonTitkosProgr3ssKey!492?79.74
 
 # Redis (Compose hálón a host a service neve: "redis")
@@ -57,6 +59,12 @@ REDIS_PORT=6379
 GOOGLE_ANDROID_CLIENT_ID=optional
 GOOGLE_WEB_CLIENT_ID=optional
 GOOGLE_WEB_CLIENT_SECRET_ID=optional
+
+# Mailjet E-mail – opcionális (ha nincs, a kapcsolódó funkciók legyenek letiltva/no-op)
+MAILJET_API_KEY=optional
+MAILJET_SECRET_KEY=optional
+MAILJET_FROM_EMAIL=optional
+MAILJET_FROM_NAME='optional'
 ```
 
 > **Biztonság**: ha a kód `DATABASE_URL`-t használ, adjuk át így a Compose-ban `?sslmode=disable`-lel, mert a lokális Postgres nem beszél SSL-t.
@@ -246,6 +254,8 @@ PG_DATABASE=dbname
 
 AT_SECRET=pRogr3ss_at
 RT_SECRET=pRogr3ss_rt
+AT_EXPIRES_IN=36h
+RT_EXPIRES_IN=30d
 JWT_SECRET=nagyonTitkosProgr3ssKey!492?79.74
 
 REDIS_HOST=redis
@@ -254,4 +264,36 @@ REDIS_PORT=6379
 GOOGLE_ANDROID_CLIENT_ID=optional
 GOOGLE_WEB_CLIENT_ID=optional
 GOOGLE_WEB_CLIENT_SECRET_ID=optional
+
+MAILJET_API_KEY=optional
+MAILJET_SECRET_KEY=optional
+MAILJET_FROM_EMAIL=optional
+MAILJET_FROM_NAME='optional'
+```
+
+---
+
+## Mailjet konfigurálása
+
+1. Jelentkezz be a Mailjet fiókodba: https://app.mailjet.com
+2. Menj ide: API → API Key Management
+3. Ott látni fogod:
+
+```
+API Key: xxxxxxxx
+Secret Key: yyyyyyyy
+```
+
+4. Ezeket írd be az .env-be:
+
+```dotenv
+MAILJET_API_KEY=xxxxxxxxxxxxxxxx
+MAILJET_SECRET_KEY=yyyyyyyyyyyyyyyy
+```
+
+MAILJET_SECRET_KEY - ez a titkos kulcs, ami az API-kulcshoz tartozik. — soha ne oszd meg nyilvánosan, mert ezzel bárki e-maileket küldhetne a nevedben.
+
+```dotenv
+MAILJET_FROM_EMAIL=no-reply@yourdomain.com
+MAILJET_FROM_NAME="My Awesome App"
 ```

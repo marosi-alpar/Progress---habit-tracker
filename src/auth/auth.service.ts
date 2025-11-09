@@ -229,11 +229,11 @@ export class AuthService {
     const [at, rt] = await Promise.all([
       this.jwtService.signAsync(jwtPayload, {
         secret: process.env.AT_SECRET,
-        expiresIn: '7d',
+        expiresIn: process.env.AT_EXPIRES_IN || '7d',
       }),
       this.jwtService.signAsync(jwtPayload, {
         secret: process.env.RT_SECRET,
-        expiresIn: '30d',
+        expiresIn: process.env.RT_EXPIRES_IN || '30d',
       }),
     ]);
 
@@ -269,24 +269,38 @@ export class AuthService {
     await this.userService.updatePassword(user.id, hashed);
 
     const html = `
-  <div style="font-family: Arial, sans-serif; color: #333; padding: 20px;">
-    <div style="text-align: center; margin-bottom: 30px;">
-      <h1 style="color: #4CAF50;">Password Reset</h1>
+  <div style="font-family: 'Segoe UI', Arial, sans-serif; background: #f9fafb; padding: 40px 20px; color: #333;">
+  <div style="max-width: 520px; margin: 0 auto; background: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); overflow: hidden;">
+
+    <!-- Header -->
+    <div style="background: linear-gradient(90deg, #4CAF50, #66BB6A); padding: 25px; text-align: center;">
+      <h1 style="color: #fff; margin: 0; font-size: 24px; letter-spacing: 0.5px;">Password Reset</h1>
     </div>
 
-    <p>Hello,</p>
-    <p>Your new password is:</p>
-    <p style="font-size: 18px; font-weight: bold; background: #f4f4f4; padding: 10px; display: inline-block;">
-      ${newPassword}
-    </p>
+    <!-- Body -->
+    <div style="padding: 30px;">
+      <p style="font-size: 15px; margin-bottom: 16px;">Hello,</p>
 
-    <p>Please log in and change your password as soon as possible.</p>
+      <p style="font-size: 15px; margin-bottom: 8px;">Your new password is:</p>
+      <p style="font-size: 20px; font-weight: bold; color: #333; background: #f3f4f6; padding: 12px 18px; border-radius: 8px; display: inline-block; letter-spacing: 0.5px;">
+        ${newPassword}
+      </p>
 
-    <hr style="margin: 40px 0;" />
-    <footer style="font-size: 12px; color: #888; text-align: center;">
-      © ${new Date().getFullYear()} Progr3ss. All rights reserved.
-    </footer>
+      <p style="font-size: 15px; margin-top: 20px; line-height: 1.6;">
+        Please log in to your account and change your password as soon as possible for security reasons.
+      </p>
+
+      <p style="font-size: 13px; color: #999; margin-top: 30px; border-top: 1px solid #eee; padding-top: 15px; line-height: 1.5;">
+        🔒 This is an automated no-reply email. Please do not respond to this message.
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div style="background: #f9fafb; padding: 15px; text-align: center; font-size: 12px; color: #888;">
+      © ${new Date().getFullYear()} <strong>Progr3ss</strong>. All rights reserved.
+    </div>
   </div>
+</div>
 `;
 
     await this.mailjetService.sendEmail(user.email, 'Your New Password', html);
