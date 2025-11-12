@@ -297,3 +297,14 @@ MAILJET_SECRET_KEY - ez a titkos kulcs, ami az API-kulcshoz tartozik. — soha n
 MAILJET_FROM_EMAIL=no-reply@yourdomain.com
 MAILJET_FROM_NAME="My Awesome App"
 ```
+  
+---
+
+**Sipos Bálint** készítette **3SS**-nál végzett gyakorlat keretében.  
+A projektet **Marosi Alpár-Gellért** kiegészítette az alábbiakkal:
+
+- Mailjet alapú e-mail küldés bevezetése környezeti változókkal (`.env.example`)
+- A README.md kibővítése a Mailjet konfigurálási tudnivalóival
+- A „jelszó elfelejtése” e-mail kinézetének szebbé tétele HTML sablonnal
+- Egy meglévő modell kiegészítése egy új paraméterrel (`haveProfileImageBase64`)
+- A modellhez tartozó API-végpont megvalósítása
